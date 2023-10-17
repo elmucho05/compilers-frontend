@@ -1,0 +1,19 @@
+a b   # Simboli dell’alfabeto
+8     # Stati finali
+1 8   # 𝜹(0,𝈡) = {1,8}
+<3 righe vuote>
+2 3   # 𝜹(1,a) = {2,3}
+<riga vuota>
+4     # 𝜹(2,𝈡) = {4}
+<4 righe vuote>
+5     # 𝜹(3,b) = {5}
+8     # 𝜹(4,𝈡) = {8}
+2     # 𝜹(4,a) = {2}
+<riga vuota>
+6 7   # 𝜹(5,𝈡) = {6,7}
+<3 righe vuote>
+8     # 𝜹(6,a) = {8}
+<3 righe vuote>
+5 8   # 𝜹(7,b) = {5,8}
+<3 righe vuote>
+<eof>
