@@ -1,0 +1,16 @@
+# Compilazione del parser a discesa ricorsiva
+flex++ -o rdlexer.cpp lexer.l     # Generazione dello scanner
+clang++ -c rdlexer.cpp            # Compilazione dello scanner (NB Serve anche libfl-dev)
+clang++ -c simple_rd_parser.cpp   # Compilazione del parser
+clang++ -o rdparser rdlexer.o simple_rd_parser.o  # Linking
+# Esempio di esecuzione
+echo 1+1 | ./rdparser
+
+
+# Esempio 1 Kaleidoscope
+./kalcomp -o fibo fibo.k    # Compilazione Kaleidoscope
+clang++ -c fibmain.cpp      # Compilazione C++, si può anche usare g++ (ovviamente)
+clang++ -o fibonacci fibmain.o fibo.o # Linking
+./fibonacci                 # Esecuzione
+
+# Compilazione ed esecuzione analoghi gli altri due esempi di Kaleidoscope (ex2.k+ex2main.cpp e ex3.k+ex3main.cpp)
