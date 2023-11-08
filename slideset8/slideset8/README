@@ -64,3 +64,26 @@ vim set_grammar.sh
 
 
 ./set_grammar.sh expr.ll1
+
+python3 first_and_folllow.py kaleidoscope1.ll1 --> per vedere tutta la grammatica come viene fatta
+
+
+La soluzione comprende il fatto che i vari tipi di dati, cominciano per qualcosa
+- tipo nel perl, gli interi cominciano con $
+- il map con %
+- il vettore con qualcos'altro
+- esempio : $numero = 3 --> int numero = 3
+
+*introduciamo un non terminale, per esempio "funid"*
+- un prototipo di funzione è un funid e non semplicemente un id
+- della differenza fra questi token, se ne fa carico il lexer. modifica del file kaleidoscope1.ll1 in `kaleidoscope2.ll1`
+- infatti va modificato anche `lexer_kaleidoscope2.l`
+      - ide [a-zA-z][a-zA-Z0-9]
+      - funide @ide --> comincia con @
+
+```sh
+echo "extern @g(x); def @f(x y) x+y;" | ./pparser
+
+# se fai un errore, per esempio invede di @f(x y) metti solo f(x y) hai errore perché non 
+# riconosce nessuna funzione, ma un semplice 'ide' --> identificatore e non funide
+```
