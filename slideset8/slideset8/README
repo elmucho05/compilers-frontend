@@ -25,6 +25,9 @@ ai punti 1 e 2
 Per semplici esempi, il file symbtbl.h (che definisce una semplicissima symbol table)
 può essere utilizzato nella forma corrente
 
+DEVI SCRIVERE IL LEXER E LA SINTASSI
+
+
 Commandi fatti da me per l'esecuzione del programma:ù
 ```sh
 python3 first_and_follow.py -p expr3.ll1
@@ -45,4 +48,19 @@ vim set_grammar.sh
       - il file creato automaticamente è *pparser.hpp*
 
 - dentro ad pparser.hpp ci sono cose molto importanti
+   - e nella funzione set_parsing_table() ci sono cose
+      - 259 -> corrisponde alla lettera T, controlla bene l'inizio del file in cui viene definito il tutto. 
+   - la funzuione display() server per la rappresentazione del file. 
 
+-dentro a `parser.cpp` abbiamo il `main()`
+
+
+
+
+./set_grammar.sh kalaidoscope.ll1
+- abbiamo un error, non riusciamo a costruire un parser ll1
+   - questo perché lui non sa quale delle due interpretare, una funzione o una variabile
+   - per risolver l'errore
+
+
+./set_grammar.sh expr.ll1
