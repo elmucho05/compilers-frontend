@@ -24,3 +24,25 @@ ai punti 1 e 2
 
 Per semplici esempi, il file symbtbl.h (che definisce una semplicissima symbol table)
 può essere utilizzato nella forma corrente
+
+Commandi fatti da me per l'esecuzione del programma:ù
+```sh
+python3 first_and_follow.py -p expr3.ll1
+ 
+
+```
+vim set_grammar.sh
+./set_grammar.sh expression.ll
+   - questo file cosa fa:
+      - compila un parser generico in parser.cpp
+      - c'è anche il lexer il lexer.cpp e lexer .l
+      - e anche nella compilazione clang++-c lexer.cp 
+      - viene generato anche il parser.hpp dove c'è dentro la tabella di parsing
+      - il parser generico è il file pparser.cpp
+         - prende le informazioni dentro pparser.hpp - infatti senza di esso non funzionerebbe
+         - implementa uno stack e implementa l'algoritmo visto a lezione. 
+         - Gli manca però la tabella di parsing ma che abbiamo passato nel include.
+      - il file creato automaticamente è *pparser.hpp*
+
+- dentro ad pparser.hpp ci sono cose molto importanti
+
