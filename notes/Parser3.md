@@ -81,3 +81,11 @@ operare la riduzione (vedremo sotto quale altra condizione).
 
 Il puntino quindi significa che stiamo all'inizio. Quando si sposta, dice che abbiamo riconosciuto l'elemento grammaticale.Quando sta alla fine, significa che siamo arrivati alla fine. 
 
+
+
+
+
+
+
+
+
