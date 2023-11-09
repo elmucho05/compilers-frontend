@@ -12,7 +12,7 @@ T→ T ×F | F
 F→ n | (E)
 ```
 
-![[Pasted image 20231109162554.png]]
+![](Pasted image 20231109162554.png)
 
 L'attuale tabella illustra il contenuto dello stack e l'input ancora da leggere se venisse applicato l'approccio "greedy". 
 
@@ -20,7 +20,7 @@ L'attuale tabella illustra il contenuto dello stack e l'input ancora da leggere 
 ### Struttura di un parser LR
 Un parser è caratterizzato da un programma di controllo che ha accesso ad uno stack e ad una tabella di parsing. 
 
-![[Pasted image 20231109163925.png]]
+![](Pasted image 20231109163925.png)
 
 - Le tabelle prescrivono il comportamento del programma di controllo in funzione del contenuto dello stack e dei primi k caratteri presenti in input (per noi k = 1).
 - Lo stack, contiene stati anziché simboli.
@@ -44,8 +44,8 @@ S -> eps
 ```
 
 E la seguente tabella di parsing :
-![[Pasted image 20231109164609.png]]
-![[Pasted image 20231109164629.png]]
+![](Pasted image 20231109164609.png)
+![](Pasted image 20231109164629.png)
 
 La parte più difficile è riuscire a creare la *Tabella di parsing*.
 - ogni volta che faccio le reduce, facciamo paritre del codice
@@ -77,7 +77,7 @@ Un item con il puntino in fondo indica quindi che il processo di
 riconoscimento della parte destra è completato e dunque che si può
 operare la riduzione (vedremo sotto quale altra condizione).
 
-![[Pasted image 20231109165853.png]]
+![](Pasted image 20231109165853.png)
 
 Il puntino quindi significa che stiamo all'inizio. Quando si sposta, dice che abbiamo riconosciuto l'elemento grammaticale.Quando sta alla fine, significa che siamo arrivati alla fine. 
 
