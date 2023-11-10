@@ -27,3 +27,46 @@ dove :
 - P : è l'insieme delle produzione che hanno la forma X-> Y dove X e Y possono essere terminali e non terminali
 - $S \in N$ è il simbolo iniziale detto **assioma**
 
+Una grammatica *regolare* è detta **lineare**
+```
+Esempio di Grammatica :
+Questa è una grammatica lineare a sinistra
+A --> xB oppure A -->x
+x è un TERMINALE
+B è un non terminale
+
+
+Questa invece è un grammatica lineare a destra
+
+A --> Bx oppure A --> x
+x è un TERMINALE
+B è un non terminale
+
+
+
+```
+
+
+### Grammatiche Context-Free
+---
+Per la definizione della sintassi dei linguaggi di programmazione, abbiamo bisogno di un particolare tipo di linguaggio chiamato **libero dal contesto/context-free**. 
+
+**Produzioni:** regole di riscrittura
+I linguaggi liberi sono generabili da grammatiche in le produzioni hanno la seguente forma: $A->\alpha$
+
+dove A è un NON-Terminale, e $\alpha$ è una qualsiasi stringa di terminali o non terminali. 
+
+***Esistono anche grammatiche ricorsive*** ed hanno la seguente forma: $\alpha -> \beta$
+
+##### Derivazioni e produzioni
+**Produzioni:** regole di riscrittura 
+	- Ad esempio, una produzione del tipo $A -> aA$ si può leggere come: *"il simbolo A può essere sostituito(**riscritto**) dal simbolo terminale **a**  oppure ancora dal simbolo non terminale **A**"*
+
+
+>Una ***derivazione*** quindi può essere definita come il processo mediante il quale, a partire dall'assioma ed applicando una sequenza di produzioni, si ottiene la stringa formata da *soli terminali*. 
+
+Una derivazione è composta da più applicazioni di produzioni e dunque da più *sequenze intermedie* : $S => \alpha_1 => ... => \alpha_i => \alpha_k$
+
+Una grammatica descrive(genera) il linguaggio formato dalle sequenze di simboli terminali derivabili a partire dall'assioma *S*. 
+
+
