@@ -12,4 +12,18 @@ Quindi possiamo dire che un linguaggio regolare non può descrivere la precedent
 
 
 
+### Cos'è una grammatica
+---
+Una **grammatica** è un formalismo per definire linguaggi.
+
+La modalità con cui una grammatica definisce un linguaggio è di natura "generativa", cioè esiste un modo con cui usando la grammatica, è possibile *generare/derivare* tutte le frasi del linguaggio-
+
+
+Una grammatica G, formalmente è definita come una **quadrupla** di elementi : $G = (N, T, P, S)$
+
+dove : 
+- $N$ : è un insieme di simboli detti "NON-TERMINALI"
+- T : è un insieme di simboli detti "TERMINALI"
+- P : è l'insieme delle produzione che hanno la forma X-> Y dove X e Y possono essere terminali e non terminali
+- $S \in N$ è il simbolo iniziale detto **assioma**
 
