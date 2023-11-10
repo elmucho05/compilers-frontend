@@ -17,9 +17,17 @@ dove:
 
 
 #### Computazione di un automa
+---
 Ad ogni passo, l'automa si trova in uno stato *q*, legge un simbolo *x* dall'input e transita nello stato determinato da $\delta(q,x)$.
 
 Finisce di computare in uno dei due casi:
 1. **ho finito di leggere tutta la sequenza di input**
 2. **la funzione di transizione è indefinita per lo stato attuale e il simbolo in lettura**
+Tipicamente, le computazioni hanno un costo di *O(n)*. 
 
+
+
+> Gli automi sono rappresentati tramite i *diagrammi di transizione*. 
+> 	- sono dei grafi i cui nodi sono gli stati e archi le transizioni.
+> 	- ogni arco è etichettato da un simbolo in input
+> 	- gli statati finali sono accerchiati doppiamente
