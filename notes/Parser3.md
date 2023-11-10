@@ -12,7 +12,7 @@ T→ T ×F | F
 F→ n | (E)
 ```
 
-![Tabella stack e input](Pasted image 20231109162554.png)
+![Tabella](Pasted image 20231109162554.png)
 
 L'attuale tabella illustra il contenuto dello stack e l'input ancora da leggere se venisse applicato l'approccio "greedy". 
 
