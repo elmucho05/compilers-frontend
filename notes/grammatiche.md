@@ -1,4 +1,4 @@
-Il compito del *parser* è di stabilire se una sequenza di toke rappresenta un programma sintatticamente corretto e, se questo è il caso, di fornire una descrizione della struttura sintattica. 
+Il compito del *parser* è di stabilire se una sequenza di token rappresenta un programma sintatticamente corretto e, se questo è il caso, di fornire una descrizione della struttura sintattica. 
 
 
 > Un **linguaggio regolare NON** può includere frasi in cui una porzione di frase condizionata da una precedente porzione di frase. 
@@ -65,8 +65,55 @@ dove A è un NON-Terminale, e $\alpha$ è una qualsiasi stringa di terminali o n
 
 >Una ***derivazione*** quindi può essere definita come il processo mediante il quale, a partire dall'assioma ed applicando una sequenza di produzioni, si ottiene la stringa formata da *soli terminali*. 
 
-Una derivazione è composta da più applicazioni di produzioni e dunque da più *sequenze intermedie* : $S => \alpha_1 => ... => \alpha_i => \alpha_k$
+Una derivazione è composta da più applicazioni di produzioni e dunque da più *sequenze intermedie* : $S => \alpha_1 => ... => \alpha_i => \alpha_k$ dove $\alpha$ è una stringa. 
 
 Una grammatica descrive(genera) il linguaggio formato dalle sequenze di simboli terminali derivabili a partire dall'assioma *S*. 
 
+
+Consideriamo la grammatica Gn,m = (N , T , P, S) così definita:
+N = {S, A, B};
+T = {a, b};
+S = S;
+P contiene le seguenti produzioni:
+```
+S -> eps, S -> A
+A -> a, A -> aA, A-> B
+B -> bB, B-> b
+
+Nel linguaggio che genera questa grammatica, è inclusa la stringa *ab* perché 
+S => A => aA => aB => ab
+```
+
+Spiegazione della grammatica: 
+- `aA => aB` significa che dalla stringa **aA** si passa alla stringa successiva
+	- questo è possibile grazie al fatto che nella grammatica, A può diventare B , `A -> B`
+
+> La stringa di *terminali* generata da una derivazione è detta ***frase del linguaggio****
+
+> Le stringhe che in precedenza abbiamo indicato come "passaggi intermedi" sono chiamate ***forme di frase*** . Si noti che una forma di frase deve includere almeno un simbolo non terminale che deve ancora essere riscritto. 
+
+Una grammatica può essere espressa elencando solo le produzioni. La grammatica precedente può essere riscritta: 
+
+
+```
+S -> ϵ
+S -> S -> A
+A -> a
+A -> aA
+A -> B
+B -> bB
+B -> b
+```
+
+Da notare che i simboli **TERMINALI** **compaiono** solo a **destra** delle produzione mai a sinistra. 
+
+
+> Di solito se X -> Y e X -> Z, scriviamo semplicemente `X-> Y | Z`
+
+Usando questa convenzione, la nostra grammatica diventa: 
+```
+S -> ϵ | A
+A -> a | A | aA | B
+B -> bB | b
+```
 
