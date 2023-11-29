@@ -341,44 +341,31 @@ std::vector<Type*> Doubles(Args.size(), Type::getDoubleTy(*context));
 //genera FT (function type) e vado a vedere se esiste un tipo già fatto così sennò lo genero, genero la Function Type
 FunctionType *FT = FunctionType::get(Type::getDoubleTy(*context), Doubles, false);
 
-//genero questa funzione con tipo FT e con nome Name, e questa funzione viene messa nel nodo.
+//genero questa funzione con tipo FT e con nome Name, e questa funzione viene messa nel nodo. Create salva anche il numero di parametri
 Function *F = Function::Create(FT, Function::ExternalLinkage, Name, *module);
 
 //ExternalLinkage --> la funzione è visibile anche all'esterno del modulo
 
 
+//Una volta definita la funzione, ora devo semplicemente:
 
+//per ogni argomento della funzione:
 unsigned Idx = 0;
 
 for (auto &Arg : F->args())
+// ad ogni argomento della funzione diamo il nome che ha specificato il programmatore
+	Arg.setName(Args[Idx++]);
 
-Arg.setName(Args[Idx++]);
+//nel parser hai : se "def" proto exp $2.noemit()
 
-  
-
-/* Abbiamo completato la creazione del codice del prototipo.
-
-Il codice può quindi essere emesso, ma solo se esso corrisponde
-
-ad una dichiarazione extern. Se invece il prototipo fa parte
-
-della definizione "completa" di una funzione (prototipo+body) allora
-
-l'emissione viene fatta al momendo dell'emissione della funzione.
-
-In caso contrario nel codice si avrebbe sia una dichiarazione
-
-(come nel caso di funzione esterna) sia una definizione della stessa
-
-funzione.
-
-*/
-
+//come output avrai : deflare @printval(double) 
+//SEMPLICEMENTE SE HAI UN PROTOTIPO, NON GENERO CODICE
+//perché non quando definisci la funzione, stai generando anche un prototipo
 if (emitcode) {
 
-F->print(errs());
-
-fprintf(stderr, "\n");
+	F->print(errs());
+	
+	fprintf(stderr, "\n");
 
 };
 
@@ -386,3 +373,5 @@ return F;
 
 }
 ```
+
+NON GENERO CODICE quando ho un *PROTOIPO* perché tanto lo genero quando lo definisco ecco perché c'è il **noemit**. Sennò da anche errore.
