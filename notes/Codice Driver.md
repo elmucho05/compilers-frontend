@@ -301,19 +301,88 @@ if (CalleeF->arg_size() != Args.size())
 	return LogErrorV("Numero di argomenti non corretto");
 
 
+//costruisco un vettore di oggetti di tipo value
 std::vector<Value *> ArgsV;
-
-for (auto arg : Args) {
-
+for (auto arg : Args) { //per ogni argomento passato alla funzione, gli argomenti sono di tipo double, potevo fare double arg in Args
+	//mette in fondo al vettore il codice corrispondente a quel argomento.
 	ArgsV.push_back(arg->codegen(drv));
-	
+	//se non sono arrivato in fondo, errore
 	if (!ArgsV.back())
-	
-	return nullptr;
-	
+		return nullptr;
 	}
+//alla fine di questo ciclo for abbiamo ricorsivamente scritto il codice per valutare gli argomenti e tutti questi sono stati messi in un vettore di registri SSA chiamati ArgsV
+
+//Do la chiamata, il numero di argomenti e "calltmp" è il nome del registro SSA dove metto il risultato della chiamata.
 
 return builder->CreateCall(CalleeF, ArgsV, "calltmp");
+}
+```
+
+
+Per completare questo linguaggio dobbiamo gestire la definizione di funzione e l'external. 
+
+#### External
+vediamo subito la codegen di PrototypeAST:
+```c++
+//ricordarsi quando ci aspettiamo un protopito
+	//se prima ho def proto, mi aspetto un body
+	//sennò niente body
+Function *PrototypeAST::codegen(driver& drv) {
+
+//Abbiamo il nome di una funzione e il numero di parametri 
+
+//se una funzione ha N argomenti, il suo tipo è N+1 tipi.
+
+//Semplicemente crea un vettore di Tipi che chiamo Double e il tipo di questo è dato trami getDoubleType() che resituiscre la rappresentazione unica di double 
+std::vector<Type*> Doubles(Args.size(), Type::getDoubleTy(*context));
+
+//Doubles è un vettore di tipo double ora che contiene i tipi di parametri.
+
+//genera FT (function type) e vado a vedere se esiste un tipo già fatto così sennò lo genero, genero la Function Type
+FunctionType *FT = FunctionType::get(Type::getDoubleTy(*context), Doubles, false);
+
+//genero questa funzione con tipo FT e con nome Name, e questa funzione viene messa nel nodo.
+Function *F = Function::Create(FT, Function::ExternalLinkage, Name, *module);
+
+//ExternalLinkage --> la funzione è visibile anche all'esterno del modulo
+
+
+
+unsigned Idx = 0;
+
+for (auto &Arg : F->args())
+
+Arg.setName(Args[Idx++]);
+
+  
+
+/* Abbiamo completato la creazione del codice del prototipo.
+
+Il codice può quindi essere emesso, ma solo se esso corrisponde
+
+ad una dichiarazione extern. Se invece il prototipo fa parte
+
+della definizione "completa" di una funzione (prototipo+body) allora
+
+l'emissione viene fatta al momendo dell'emissione della funzione.
+
+In caso contrario nel codice si avrebbe sia una dichiarazione
+
+(come nel caso di funzione esterna) sia una definizione della stessa
+
+funzione.
+
+*/
+
+if (emitcode) {
+
+F->print(errs());
+
+fprintf(stderr, "\n");
+
+};
+
+return F;
 
 }
 ```
