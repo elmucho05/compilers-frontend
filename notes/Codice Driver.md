@@ -374,4 +374,12 @@ return F;
 }
 ```
 
-NON GENERO CODICE quando ho un *PROTOIPO* perché tanto lo genero quando lo definisco ecco perché c'è il **noemit**. Sennò da anche errore.
+NON GENERO CODICE quando ho un *PROTOTIPO* perché tanto lo genero quando lo definisco ecco perché c'è il **noemit**. Sennò da anche errore.
+
+Nel file ``morecomplex.k`
+Esempio : `def f(x y) x*x-2*x-y+3*y*y` 
+Uso una funzione di aiuto `helper()` , guardi semplicemente l'ordine di chiamata delle funzioni.
+
+
+
+
