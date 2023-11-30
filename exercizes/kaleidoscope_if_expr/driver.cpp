@@ -177,8 +177,10 @@ Value* CallExprAST::codegen(driver& drv) {
 }
 
 /************************* Prototype Tree *************************/
+//constructore
 PrototypeAST::PrototypeAST(std::string Name, std::vector<std::string> Args):
   Name(Name), Args(std::move(Args)), emitcode(true) {};  //Di regola il codice viene emesso
+
 
 lexval PrototypeAST::getLexVal() const {
    lexval lval = Name;
@@ -225,7 +227,8 @@ Function *PrototypeAST::codegen(driver& drv) {
      (come nel caso di funzione esterna) sia una definizione della stessa
      funzione.
   */
-  if (emitcode) {
+  if (emitcode.k
+  e) {
     F->print(errs());
     fprintf(stderr, "\n");
   };
@@ -245,9 +248,12 @@ Function *FunctionAST::codegen(driver& drv) {
   // generando (ma non emettendo) il codice del prototipo
   if (!function)
     function = Proto->codegen(drv);
+   else
+    return nullptr; // se non è stata definita, errore, nullptr
   // Se, per qualche ragione, la definizione "fallisce" si restituisce nullptr
   if (!function)
-    return nullptr;  
+    return nullptr; 
+
 
   // Altrimenti si crea un blocco di base in cui iniziare a inserire il codice
   BasicBlock *BB = BasicBlock::Create(*context, "entry", function);
