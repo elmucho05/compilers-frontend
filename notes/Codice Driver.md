@@ -28,7 +28,7 @@ Contiene anche tutte le classi per i vari costrutti.
 	- `RootAST* root` : dichiarazione della radice alla quale ci scrive il parser.
 	- `int parse(const std::string &f)` prende in input il file da cui legere
 	- `bool trace_parsing` semplicemente per il debug
-	- `void scan_end scan_begin()` 
+	- `void scan_end() scan_begin()` 
 	- `yy::location location;` usata dallo scanner per localizzare i token
 	- `void codegen()` funzione generatrice del codice, ogni classe avrà la sua relativa, la classe delle espressioni, genera codice per le espressioni. 
 	- std::variant <> lexval , l'abbiamo visto in classe.
@@ -42,7 +42,7 @@ Ci servono oggetti di 3 classi particolari:
 2. **Module**
 3. **IRBuilder** : metodi che generano internamente rappresentazioni di tutte le istruzioni, poi ad un certo punto le possiamo emettere. Costruiscono quindi quindi le varie istruzioni del codice intermedio. 
 
-impelmentazioni delle funzioni 
+implementazioni delle funzioni 
 
 ```cpp
 //Implementazione del metodo parse
@@ -111,9 +111,10 @@ return nullptr;
 };
 ```
 
-Si scende a sx, genera il codice, il risultato calcolato viene rappresentato da un registro : `Value *f ` è un registro *SSA* 
+Si scende a sx, genera il codice, il risultato calcolato viene rappresentato da un registro : `Value *f ` è un registro *SSA* (Stati single Access)
+- un registro che può essere scritto solo da un'istruzione, ma allo stesso tempo, se l'istruzione è eseguita più volte, essa può riscrivere più volte quel registro.
 
-###### Ora guardiamo la **Binary expression Tree**
+#### Binary expression Tree
 Se mi trovo un nodo che è un operatore binario. 
 ```cpp
 BinaryExprAST::BinaryExprAST(char Op, ExprAST* LHS, ExprAST* RHS):
@@ -135,27 +136,27 @@ Value *R = RHS->codegen(drv); //genera il codice e salva risultato in R
 
 if (!L || !R) //se uno solo è null, ritorna nulla
 
-return nullptr;
+	return nullptr;
 
 switch (Op) { //altrimenti controllo l'operatore memorizzato nel nodo
 
-case '+':
-//chiamo il builder che ha sto metodo e opzionalmente il nome di un regsitro in cui mettere il risultato
-return builder->CreateFAdd(L,R,"addres"); //add res, risultato somma
-
-case '-':
-
-return builder->CreateFSub(L,R,"subres");
-
-case '*':
-
-return builder->CreateFMul(L,R,"mulres");
-
-case '/':
-
-return builder->CreateFDiv(L,R,"addres");
-
-default:
+	case '+':
+	//chiamo il builder che ha sto metodo e opzionalmente il nome di un regsitro in cui mettere il risultato
+	return builder->CreateFAdd(L,R,"addres"); //add res, risultato somma
+	
+	case '-':
+	
+	return builder->CreateFSub(L,R,"subres");
+	
+	case '*':
+	
+	return builder->CreateFMul(L,R,"mulres");
+	
+	case '/':
+	
+	return builder->CreateFDiv(L,R,"addres");
+	
+	default:
 
 std::cout << Op << std::endl;
 
@@ -185,19 +186,10 @@ return lval;
 
 };
 
-// Non viene generata un'struzione; soltanto una costante LLVM IR
-
-// corrispondente al valore float memorizzato nel nodo
-
-// La costante verrà utilizzata in altra parte del processo di generazione
-
-// Si noti che l'uso del contesto garantisce l'unicità della costanti
-
-
 /*
-non posso scrivere direttamente return val, anche perché codegen riece a vedere l'attributo. 
+non posso scrivere direttamente return val, anche se codegen riece a vedere l'attributo. 
 
-- perché le costanti devono essere uniche e sono mantenute tutte da questo contesto. Nel contest sono rappresentate nel Conetext in modo unico. 
+- questo perché le costanti devono essere uniche e sono mantenute tutte da questo contesto. Nel contest sono rappresentate nel Conetext in modo unico. 
 - Quindi fai la get del contesto
 	- esempio 3+2, abbiamo le costanti 3 e 2
 		- lui si chiede, il 3 è già stato generato?
@@ -263,6 +255,7 @@ if (!A)//ho trovato un errore semantico, cioè stai usando una variabile non def
 	return LogErrorV("Variabile non definita");
 
 // prendi e crea un load di (quanto spazio allocare, tabella, e il nome dell'istruzione)
+//la load serve per caricare il contenuto di una variabile
 return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
 
 }
@@ -300,7 +293,7 @@ if (CalleeF->arg_size() != Args.size())
 
 	return LogErrorV("Numero di argomenti non corretto");
 
-
+//Value è un tipo di registro SSA
 //costruisco un vettore di oggetti di tipo value
 std::vector<Value *> ArgsV;
 for (auto arg : Args) { //per ogni argomento passato alla funzione, gli argomenti sono di tipo double, potevo fare double arg in Args
@@ -382,4 +375,212 @@ Uso una funzione di aiuto `helper()` , guardi semplicemente l'ordine di chiamata
 
 
 
+#### Definizione delle funzioni
+una funzion è un **prot** + **body**. Infatti nel costruttore che assegnamo un puntatore al body. Il body deve essere già stato costruito poiché parliamo di parsing bottom-up. 
 
+Il nome della funzione lo prendiamo dal proto, prototipo.
+Logica generica è
+1. prendo la funzione dal modulo, in realtà sarebbe il prototipo
+2. se la funzione non è stata definita, ne creo una
+	1. ma se la funziona è stata già definita, allora non la devo ridefinire, semplicemente ritorno nullptr.
+
+touch prova.k
+vim prova.k
+	def f(x) x+1;
+	def f(x,y) x+y;
+
+```c++
+FunctionAST::FunctionAST(PrototypeAST* Proto, ExprAST* Body): Proto(Proto), Body(Body) {};
+
+  
+
+Function *FunctionAST::codegen(driver& drv) {
+
+//salvo il prototipo della funzione
+Function *function = module->getFunction(std::get<std::string>(Proto->getLexVal())); //prendi il nome della funzione come stringa da lexval, che è un tipo variant. 
+
+// Se la funzione non è già presente, si prova a definirla, innanzitutto
+
+// generando (ma non emettendo) il codice del prototipo
+
+if (!function)
+	//se è nullptr, definiamo il prototipo della funziona, generiamo il suo codice
+	function = Proto->codegen(drv);
+else //se la funzione già esiste nel modulo, semplicemento non la creo, devo ritornare nullptr
+	return nullptr;
+
+// Se, per qualche ragione, la definizione "fallisce" si restituisce nullptr
+
+if (!function) 
+	//se per qualche motivo codegen ha avuto errore, restituisco nullptr
+	return nullptr;
+
+/**Body della funzione***/
+//Devo definire un basic block
+//ci passo il contesto, il nome del basic block, e la funzione 
+BasicBlock *BB = BasicBlock::Create(*context, "entry", function);
+
+//poi dico al builder che il punto d'inserimento da cui cominciare a scrivere nel Basic Block BB
+builder->SetInsertPoint(BB);
+
+
+//per tutti gli argomenti della funzione
+for (auto &Arg : function->args()) {
+
+	//creo un blocco che genera un'istruzione di allocazione che alloca 8 byte, mette il puntatore a questi ad un registro SSA ilo cui nome è getName --> infatti lo chiama %x1 e dentro ci mette il puntatore all'indirizzo di memoria allocato. 
+	//gurada il risultato di ./komp prova
+	AllocaInst *Alloca = CreateEntryBlockAlloca(function, Arg.getName());
+	//fai una store, memorizza un double che sta dentro %x nella cella puntata da %x1.
+	//semplicemente fai x1 = x, perché i registri non sono riscrivibile e x è il parametro che è un registro irriscrivibile
+	builder->CreateStore(&Arg, Alloca);
+	
+	//prendo il body della funzione, faccio una chiamata che punta all'AST del body
+	drv.NamedValues[std::string(Arg.getName())] = Alloca;
+	//semepio x+y*z
+	//+x*y z --> AST
+	//vedo cos'è x, è una variabile, faccio una load, prendo il suo valore
+}
+
+
+
+if (Value *RetVal = Body->codegen(drv)) {
+//guarda cosa fa l'albero e l'output ./komp
+	builder->CreateRet(RetVal);
+	
+	// Effettua la validazione del codice e un controllo di consistenza
+	verifyFunction(*function);
+	// Emissione del codice su su stderr)
+	
+	function->print(errs());
+	
+	fprintf(stderr, "\n");
+	
+	return function;
+
+}
+
+  
+
+// Errore nella definizione. La funzione viene rimossa
+
+function->eraseFromParent();
+
+return nullptr;
+
+};
+```
+
+
+```sh
+$ vim examples/morecomplex.k
+```
+```.k
+extern x(); //ritorna un valore per x
+extern y(); //ritorna un valore per y
+extern printval(z);
+def f(x y) x*x-2*x*y+3*y*y;
+def helper() f(x(),y());
+def main() printval(helper());
+
+```
+
+uso helper che chiama f passandoci i valori delle funzioni x() e y() per i suoi parametri x e y.
+
+```sh
+$ vim rw.cpp
+```
+
+per definire un linkage globale che si veda ovunque:
+```cpp
+#include <iostream>
+
+extern "C" {
+    double x();
+}
+extern "C" {
+    double y();
+}
+extern "C" {
+    double printval(double);
+}
+
+double x() {
+    double tmp;
+    std::cout << "Inserisci il valore di x: ";
+    std::cin >> tmp;
+    return tmp;
+}
+
+double y() {
+    double tmp;
+    std::cout << "Inserisci il valore di y: ";
+    std::cin >> tmp;
+    return tmp;
+}
+
+double printval(double x) {
+    std::cout << "Il valore calcolato è " << x << std::endl;
+    return 0;
+}
+
+```
+
+```sh
+clang -c re.cpp
+	output è un file rw.o
+```
+
+clang++ -o morecomplex.o rw.o
+	linking fatto
+
+
+Supponiamo ora di voler introdurre l'expression IF
+
+Vogliamo poter scrivere coose di questo tipo:
+`x>0 ?  1 : 2`
+`x=y+1 ? 2*x : 3*y`
+
+
+1. make clean
+2. cp -r slideset12 kaleidoscope-expr-if
+3. cd kaleidoscope-expr-of
+4. gedit parser.yy
+
+modifichiamo il parser per definirei token per il <,=,?, :
+
+QMARK "?"
+
+
+5. gedit scanner.ll
+	1. ci metto i token in riga 42
+6. vim expif.l
+	1. 1+(x>1 ? : 2);
+
+aggiungo anche la priorità nel parser sopra al +,-,*,/*:
+%left "<" "=";
+
+modifico anche cos'è un'espressione aggiungendo che una exp, può essere anche una expr if. 
+exp :
+|
+|
+| exprif     `{$$ = $1}$`
+
+exp if deve anche creare una classe, quindi devi creare la classe per il nodo dell'altbero, ma sempre nel parser
+
+`%type <ExprASRT> * expif*`
+
+devo introdurre una nuova categoria sintattica, un nuovo NON TERMINALE **condexp** 
+expif:
+	`condexp "?" exp ":" exp {$$ = new IfExprAST($1,$2,$3, $5)};`
+```
+
+`condexp:`
+	exp "<" exp = {new BinaryAST('<', $1, $3)};
+	|exp "=" exp = {new BinaryAST('<', $1, $3)};
+
+TODO
+1. introduci la classe IfExprAST che avrà 3 figli ma anche l'operatore
+
+2. devo introdurre una classe  conditional expression
+	condexp
+```
