@@ -2,6 +2,6 @@
 
 fn=${1%.*}
 
-llvm-as $1
-llc ${fn}.bc
+llvm-as-14 $1
+llc-14 ${fn}.bc
 as -o ${fn}.o ${fn}.s
