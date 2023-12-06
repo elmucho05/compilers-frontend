@@ -556,7 +556,7 @@ QMARK "?"
 6. vim expif.l
 	1. 1+(x>1 ? : 2);
 
-aggiungo anche la priorità nel parser sopra al +,-,*,/*:
+aggiungo anche i relazionali per la priorità nel parser sopra al +,-,*,/*:
 %left "<" "=";
 
 modifico anche cos'è un'espressione aggiungendo che una exp, può essere anche una expr if. 
@@ -584,3 +584,344 @@ TODO
 2. devo introdurre una classe  conditional expression
 	condexp
 ```
+
+Dobbiamo modificare anche lo scanner che ritorni LT, EQ se trova <,<=
+
+se provo a fare `bison parser.yy` abbiamo un conflitto shift reduce. 
+
+Se aggiungi l'opzione **-Wconterexamples** vedi il controesempio per l'errore shift reduce. Il problema sta nella priorità, dobbiamo dirgli cosa farne col ":".
+- gli dico che i ":" dopo avranno tutta un'espressione
+
+
+Ora posso compilare anche con flex++ :
+`flex++ scanner.ll`
+
+- *Ora dobbiamo andare sul driver in `driver.hpp`*
+		- inseriamo la classe IfExprAST :
+			
+```c++
+class IfExprAST: public ExprAST{
+
+private:
+
+	ExprAST* cond; //condizione
+	
+	ExprAST* trueexp; //qando la condizione è vera
+	
+	ExprAST* falseexp;
+	
+	  
+
+public:
+
+	ExprAST(ExprAST* cond, ExprAST* trueexpr, ExprAST* falseexpr);
+	
+	Value* codegen(driver& drv) override;
+
+}
+```
+
+
+modifico anche il file cpp:
+Dobbiamo:
+- scrivere il scrivere il codice che valuta il condizionale
+	- inserire altri 3 blocchi, true, false e continuazione. 
+	- Dobbiamo poi dobbiamo inserire un condizionale che ti salta al blocco vero o false.
+	- Alla fine del blocco true, devo poter bypassare il blocco false e andare subito al blocco merge
+		- idem per il blocco false. Devo mettere un'istruzione
+
+```c++
+IfExprAST(ExprAST* cond, ExprAST* trueexpr, ExprAST* falseexpr):
+
+cond(cond), trueexpr(trueexpr), falseexp(falseexp){};
+
+  
+//CI SONO ERRORI GRAMMATICI, ERO DI FRETTA,NON COPIARE IL CODICE
+Value* IfExprAST::codegen(driver &drv){
+
+//valutiamo la condizione, che lascia il risultato in un registro ssa
+
+//sul primo figlio che è cond,
+
+Value* CondV = cond->codegen(drv);
+
+if(!CondV) return nullptr; //se non ho avuto un risultato, ritorno nullprt
+
+  
+  
+
+//adesso bisogna generare l'istruzione di branch condizionato
+
+//vanno generati i blocchi di tipo basic block per le istruzioni true e false
+
+  
+
+//prima però dobbiamo definire una funzione
+
+//dice in quale funzione sei , getParent
+
+Function* fun = builder->GetInsertBlock()->getParent();
+
+BasicBlock *TrueBB = BasicBlock::Create(*context, "trueblock", fun);
+
+  
+
+//questo basic block true lo devi inserire nel blocco false
+
+//ma non posso metterci "fun" direttamente. Se avessi in "if" annidato, avrei error
+
+//semplicemente creo il blocco.
+
+BasicBlock *FalseBB = BasicBlock::Creat(*context, "falseblock");
+
+  
+
+//faccio la stessa cosa per il merge, lo creo e basta
+
+BasicBlock *MergeBB = BasicBlock::Creat(*context, "mergeblock");
+
+  
+
+//crea un branch condizionale, il risultato lo prendi da CondV, se vero vai in TrueBB, se false vai in FalseBB
+
+builder->CreateCondBr(CondV, TrueBB, FalseBB);
+
+  
+
+//Ora posso generare la parte true, ma devo dire al builder di cambiare blocco
+
+//dobbiamo andare nel blocco TrueBB,
+
+builder->SetInseryPoint(TrueBB);
+
+  
+
+//adesso posso semplicemente richiamare in modo ricorsivo per vedere se ci sono if annidati
+
+Value * TrueV = trueexp->codegen(drv);//che lascerà il suo risultato in un registro SSA
+
+if(!TrueV) return nullptr;
+
+  
+
+//ADESSO POSSO METTERE IL BRANCH AL MERGE
+
+//nel mergeblock, ci sarà l'istruzione phi, che è un'istruzione che ha un numero
+
+//arbitrario di parametri
+
+//phi dice:
+
+//se arrivi da true, il valore sarà un numero,
+
+//se arrivi da false sarà un'altro
+
+//se nel blocco true ho un'altro condizionale, allora l'istruzione di salto arriverà dall'ultimo blocco
+
+//if(true)
+
+//if (false)
+
+//il risultato arriva dall'ultimo blocco.
+
+//Quindi se il blocco true contiene un condizionale, posso avere un'altro insertblock
+
+//IMPORTANTISSIMO, sennò qua vai in segmentationfault
+
+//metto l'istruzione del salto condizionato
+
+builder->CreateBr(MergeBB); //crea una merge al MergeBB, ho finito true
+
+  
+
+//A questo punto possiamo considerare il blocco False, i blocci si inseriscono dalla funzione
+
+//devi inserire il blocco FalseBB alla fine della funzione
+
+//quella che inserisce il blocco è la function non il builder
+
+fun->insertBlock(fun->end(), FalseBB);
+
+  
+
+//l'attuale insert viene impostato a FalseBB
+
+builder-> SetInsertPoint(FalseBB);
+
+//controllo se ha altri blocci
+
+Value* FalseV = falseexp->codegen(drv);
+
+if(!FalseV) return nullptr;
+
+  
+
+//riaggiorno il blocco di salto
+
+FalseBB = builder->GetInsertBlock();
+
+builder->CreateBr(MergeBB);
+
+  
+
+//adesso dico che il builder deve cominciare a inserire nel merge
+
+fun.insert(fun->end(), MergeBB);
+
+builder->SetInsertPoint(MergeBB);
+
+//devo riaggiornare i FLUSSI
+
+//acceta come parametri
+
+// il tipo--> Type::
+
+//si crea in 1+n passi, in questo caso 2 flussi, if ed else
+
+//Creo un'istruzione PHI che aggiunge il valore al registro se arrivi da true o false
+
+PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2)
+
+//Resituisci vero come risultato se arrivi da TrueBlock
+
+//mancano i nomi delle funzioni
+
+P->addIncoming(TrueV, TrueBB);
+
+P->addIncoming(FalseV, FalseBB);
+
+  
+
+};```
+
+
+Per eseguire e controllare
+
+```shell
+make all;
+
+cat fact.k
+#controlla il fattoriale
+./kcomp fact.k
+```
+###### Analizziamo l'output dei comandi sopra
+
+viene definita fact con un parametro n
+1. viene allocata memoria per il parametro n
+		1. restituisce il puntatore al registro n1
+2. faccio la store del parametro in memoria
+3. il parser ha detto che sto facendo un ifexpr
+4. controlla n<1
+5. fa la load ad n dentro un registro n2.
+6. poi viene chiamato ricorsciamente e trova number=1 
+7. confromta con **lt** di n2 con 1, $n2 \le 1$
+8. br i1, il risultato è un booleano e gli dice di saltare alla label trueBlock o FalseBlock
+9. Abbiamo ricorsicvamente generato il codice per il **true**
+10. Ora crea ricorsicamente il codice per **false**
+	1. fa la load dentro a n3
+	2. poi dentro n4
+	3. fa la sottrazione 1 da n4 e mette il risultato dentro a **subres**
+	4. calltmp, chiamata ricorsica alla funzione
+	5. mulres, risultato della moltiplicazione tra n3 e il risultato della funzione 
+	6. br label %mergeblock , salta a mergeblock 
+11. mergeblock, il risultato di **phi** l, cioè l'1 lo metti in trueblock e il risultato della moltiplicazione lo metti in false block
+
+
+`clang++ -c callfact.cpp`
+`clang++ -o fact fact.o callfact.o` //linker
+`./fact` e ci metti 5
+
+Ora vediam l'esempio dell'if annidato :**doublecond.k**
+	-controlla il segno di un numero, se +,- 
+
+Controllando l'output
+- conforonta il risultato con lo 0 e lo passa ad un  blocco true o false
+- vediamo che il false block è composto di tanti true block, false blcok e merge block. 
+
+- ecco perché dobbiamo aggiornare ogni volta l'insert point e sapere da dove arriviamo, cosìché sai cosa tornare nel mergeblock, devi restituire il risultato del blocco da dove entri. 
+
+
+Per implementare il for: 
+1. verifico la condizione da partenza e saltare al codice per la condizione di fine
+2. il codice per la condizione di fine o va dopo il for o al body
+3. Dal body, passo al codice per l'aggiornamento che passa al blocco finale.
+
+Sono 5 blocchi per il for.
+
+`cat rwfact_withmain.k` Un fattoriale ma il main sta dentro a Kaleidoscope, quindi ho oltre alle funzioni, anche la definizione del main program. 
+
+`cat rwfact.cpp` : è sempre uguale.
+
+`./kcomp rwfact_withmain.k 2> rw_withmain.ll`
+`cat rw_withmain.ll`
+
+`clang++ -c rw_fact.cpp`
+`clang++ -o rwfact rwfact.o rwfact_withmain.o`
+`./rwfact`
+
+
+#### Memoria
+Dobbiamo fare un'estensione al nostro linguaggio. Rimane cmq un linguaggio funzionale. 
+
+Alcuni linguaggio infatti abbiamo una cosa del genere `let x=3 in : x=2*x`.
+- sia x=3 nell'espressione x=2*x*
+
+```
+{
+var x=3;
+var y=5*x;
+f(x y);
+} *5
+
+--> questa è un'espressione che moltiplichiamo per 5
+
+La chiameremo BlockExpression che è cmq una expression. La sintassi è {}, dentro le parentesi c'è una sequenza di "var", un'espressione e poi un'espressione f()
+```
+
+Esempio concreto
+```kaleidoscope
+def fibonacci(n)
+	n<2 ? 1 : 
+		{
+		var f2 = fibonacci(n-2);
+		var f1 = fibonacci(n-1);
+		f1+f2 //valore dell'espressione
+		}
+```
+
+
+Cominciamo dal parser
+`cp -r KaleidoscopeIfExpr KaleidoscopeBlockExpr`
+
+nel parser.yy
+
+Il valore della BlockExpression è il valore finale, non possiamo riassegnare valori. 
+
+Qua andremo a definire anche la regola di visibilità : **lexical scope** (se ho due variabili chiamate con lo stesso nome, quale scelgo? n=1; {n=2}, prendo n=2)
+
+###### Definiamo i nuovi token 
+intanto l'EQ lo mettiamo in ==
+
+ASSIGN "="
+LBRACE "{"
+RBRACE "}"
+VAR "var"
+
+
+###### Modifichiamo la grammatica
+aggiungiamo a exp la blockexpr
+exp: 
+| 
+| blockexp  {`$$ = $1`}
+
+blockexp:
+  "{" vardefs ";" exp "}"  {`$$ = new BlockExprAST($2,$4)`}
+
+//vardef può essere o una sola variabile o più variabili
+/var a=1
+oppure 
+//var a=1;
+//var b=2;
+vardefs:
+  vdef
+|  vdef ; vardefs  {`$$ = new VarDefs`}
