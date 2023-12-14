@@ -1,0 +1,12 @@
+extern echo(double);
+
+fun man(input)
+    with a arrof 10, i = 0 do
+        for i=0, i<10, 1 do
+            a[i] = input * (i+1)
+        end :
+        for i=0, i<10, 1 do
+            echo(a[i])
+        end
+    end
+;
