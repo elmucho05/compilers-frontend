@@ -692,7 +692,7 @@ builder->CreateCondBr(CondV, TrueBB, FalseBB);
 
 //dobbiamo andare nel blocco TrueBB,
 
-builder->SetInseryPoint(TrueBB);
+builder->SetInsertPoint(TrueBB);
 
   
 
@@ -741,11 +741,7 @@ builder->CreateBr(MergeBB); //crea una merge al MergeBB, ho finito true
 //quella che inserisce il blocco è la function non il builder
 
 fun->insertBlock(fun->end(), FalseBB);
-
-  
-
 //l'attuale insert viene impostato a FalseBB
-
 builder-> SetInsertPoint(FalseBB);
 
 //controllo se ha altri blocci
@@ -925,3 +921,267 @@ oppure
 vardefs:
   vdef
 |  vdef ; vardefs  {`$$ = new VarDefs`}
+| vardefs; binding
+
+Alla fine del parsing dovremmo avere una struttura vettoriale.
+Il primo passaggio è che binding viene ridotto a vardefs. 
+Ogni binding andrà in un elemento del vettore, che però devo creare. 
+
+Definizioni delle variabili, devi immaginarti un parsing bottom up, stiamo facendo delle riduzioni da binding a *vardefs*
+**vardefs:**
+binding        {std::vector<VarBindingsAST*> definitions
+					definitions.push_back($1);
+					`$$ = definitions;`
+					}
+| vardefs ";"    {$1.push_back($3)
+					  {`$$ = $1;`}
+} 
+vardefs è legato ad un vettore di bindings
+
+un binding è la parola chiave var a = expr, è un legame nome valore 
+
+**binding:**
+  "var" "id" "=" exp     {`$$ = new VarBingAST($2, $4);`}
+
+*Sempre nel pareser*:
+
+`%type <BlockExprAST*> blockexp`
+`%type <std::vector<VarBindngsAST*>> vardefs`
+`%type <VarBindingsAST*>binding`
+
+
+`bison -o -Wcounterexamples parser.cpp parser.yy`
+
+non abbiamo indicato la priorità
+devo cambiare il '=' in '== ' da tutte le parti. 
+
+**scanner.ll**
+definisco i simboli da riconoscere:
+
+"= ="
+" = " 
+"{" return yy:parser::make_BRACE
+"}"
+
+`flex++ -o scanner.cpp scanner.ll`
+
+#### main program -> kcomp.cpp
+istanzia la classe driver
+mette le tracce dello scanner e del parser (debug mode)
+chiama il parser sul nome del file.
+- se il parser è ok, chiama anche la generazione del codice.
+
+#### driver program --> definizione classi.hpp e cpp
+
+Dobbiamo definire
+- BlockExprAST 
+- VarExpressionAST
+
+
+Dopo la IfExprAST metto block expression 
+```c++
+class BlockExpressionAST : public ExprAST{
+
+private:
+	std::vector<VarBindngsAST*> Def;
+	ExprAST* Val; //espressione che dà il valore finale al blocco
+
+public:
+//costruttore
+	BlockExprtAST(std::vector<VarBindngsAST*> Def, ExprAST* val);
+	Value *codegen(driver& drv) ovverride;
+}
+```
+
+```c++
+class VarBindingAST : public RootAST{
+private: 
+	std::string Name; //nome che il programmatore ha dato alla variabile.
+	//la codegen deve valutare l'espressione. 
+	ExprAST* Val;
+
+public:
+	VarBindingAST(std::string Name, ExprAST* Val);
+	//la codegen deve restituire un alloca
+	AllocaInst *codegen*(driver &drv) override;
+	std::string& getName();
+	//la codegen deve:
+		//allocare memoria
+		//salvare i puntatori
+	//nella symbol table ci sono le istruzioni alloca
+	
+};
+
+```
+
+
+#### driver.cpp 
+
+```c++
+BlockExprAST::BlockExprAST(std::vector<VarBindingsAST* Def, ExprAST* Val):
+	Def(std::move(Def), Val(Val))
+
+//dobbiamo impementare la generazione del codice
+Value* BlockExprAST::codegen(driver &drv){
+	//la symbol table tiene dentro delle istruzioni di tipo ALLOCA
+//siccome siamo in una funzione, esiste già una symbol table che si ricorda il parametro passato. 
+
+//fibonacci(n) --> accede alla symbol table e trova l'indirizzo dov'è allocato n
+
+//se devo ridefinire n, devo riderinire nella symbol table n, ma non cancellarlo, perché finito il blocco, n deve eseere quello originale
+
+std::vector<AllocaInst*> tmp;
+//per ogni definizione, recuperiamo il nome e salviamo il valore nell symbol table(nel vettore in questo caso e lo sostiuiamo con a).
+
+	for (int i=0; e=Def.size(); i<e; i++){
+		//ogni var binding, lavoro prima sul right value
+		//a = a+1, valuti cosa c'è in a e ci aggiungi a
+		//siamo a livello di padre, chiamiamo codegen del figlio
+		AllocaInst *boundval = Def[i].codegen(drv);
+		//valuta la parte destra e la lasica in una varibabile. 
+		if(!boundval) return nullptr;
+		//
+		tmp.push_back(NamedValues[Def[i]->getName()])
+		drv.NamedValues[Def[i]->getName()] = boundval;
+		//a questo puunto ho aggiornato la symbol table
+		
+	}
+//posso valutare l'espressione
+Value *blockvalue = Val->codegen(drv);
+//a+b, ecco l'espressione finale, se ha bisogno di trovare i valori di a e b, li trova nella sybol table aggiornata 
+
+//ora ho bisogno di ripristinare la tabella dei simboli co i vecchi valori che ho salvato dentro a tmp
+for (int i=0; e=Def.size(); i<e; i++){
+		drv.NamedValues[Def[i]->getName()] = tmp[i];
+	}
+}
+
+return blockvalue;
+```
+
+```c++
+VarBinding AST::VarBindingAST(std::string Name, ExprAST* Vale):
+	Bame(Name), Val(val) {};
+std::string& VarBindingAST()...
+std::string getName();
+
+AllocaInst* VarBindingAST::codegen(drv){
+//ora sono dentro al blocco e devo generare codice relativo alla espressione e altre cose 
+/*posso usare la funzione chiamata *CreateEntryBlockAlloca
+che :
+	definisce un builder che alvora sul blocco d'ingresso della funzione che albvora sul blocco d'ingresso e restituisce il valore del registro. 
+
+//prima però devo valutare l'espresssione.
+Funzio
+*/
+//verifico prima la funzione e sopratutto la parte destra
+Function *fun = builder->GetInsertBlock()->getparent();
+Value *boundval = Val->codegen(drv);
+AllocaInst *Alloca = CreateEntryBlockAlloca(fun,Name);
+//ora devo legare il registro cin l'area di memoria tramite lo store
+builder->CreateStore(boundval, Alloca);
+
+return Alloca; //da mettere nella symbol table
+}
+```
+
+Ci sono da modificare anche gli operatori nello switch del file cpp
+
+Da modificare anche il file "pasrser.yy" la parte %code requires e aggiungere le classi BlockAST e VarBindingASt.
+
+Le regole di visibilità sono implementate con la symbol table.
+
+```sh
+clang++ -c callf
+clamg++ -c callfibo.cpp
+../kcomp fibo.k 2> fibo.ll
+./finish fibo.ll
+clang++ -o 
+```
+
+prova alla fine del blocco a moltiplicare n
+{} *n. 
+
+
+
+Grammatica di primo livello per il progetto
+Introduciamo le variabili e gli assegnamenti. Ci sono anche le variabili globali.
+
+- Le variabili sono assegnabili con `new GlobalBariaible(*<module>,<type>, false, <linkage>, Val, Name)`
+- GlobalValue::LinkagesTypes <linkage> = GlobalValue::CommonLinkage.
+
+
+**ecco i programmi che devono girare :**
+1. floor.k
+		1. contine 3 funzioni, che prendono la parte intera di un numero. Ha complessità log^2
+		2. ha le graffe dopo le funzioni {};
+		3. prima funziona calcola la potenza più grande che ci sta dentro
+		4. funzione floor, che è la funzione di partenza e chiama *intpart*
+		5. definisce y il cui valore è una IfExpr, quindi 0 se x=2, altrimenti x=2
+    callfloor.k
+	1. ha anche il main
+	2. definisce la funzione esterna floor
+	3. nel main chiede di inserire in valore e poi lo stampa.
+$ make all
+
+./kcomp floor.k 2>floor.ll
+./finish floor.ll
+clang++ -c callfloor.cpp
+clang++ -o floor floor.o callfloor.o
+./floor
+se inserisci 4, ti da in output 4
+se inserisci 3.4 ti deve dare 3, solo la parte intera. 
+
+
+**altro programma che deve girare**
+global seed; 
+global 
+
+se implmentata quella grammatica, parti da 22.
+
+Il secondo step chiede di inserire le strutture di controllo. Seguendo la sintassi che voglia
+- if
+- for 
+
+Ifstmt:
+	"if" condexp stmt optelse 
+optelse:
+	%empty
+	| "else" stmt
+
+forstmt: 
+	"for" "(" initfor ";" condexp ; assignment ")" stmt
+
+però devo poter modificare anche l'espressione (expr)
+
+
+*devo anche aggiungere un token ++ e -- che va aggiunto prima del +*
+
+
+
+exp:
+...
+| "id"++ {$$ = BinaryExprAST("+", $1,  ConstantFP::get(*context,APFloat(1));}
+	//diventa una binary expr il cui secondo operando è 1.
+| "id"-- {$$ = BinaryExprAST("-", $1,  ConstantFP::get(*context,APFloat(1));}
+
+id++ 
+id = id +1
+					+
+				id      1
+
+initfor:
+%empty
+| binding // var i=1
+| assignment //i=1
+
+
+Se quello stmt è un blocco, ci possono essere delle variabili con lo stesso nome della condizione del for, per cui è importante che la symbol table. 
+
+Ultimo livello sono gli *array*
+
+Var X[costante]
+X[expr]
+
+Dobbiamo implementare un frontend che implementi la sintassi. 
+
