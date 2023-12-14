@@ -36,7 +36,7 @@ class driver
 {
 public:
   driver();
-  std::map<std::string, AllocaInst *> NamedValues; // Tabella associativa in cui ogni 
+  std::map<std::string, AllocaInst*> NamedValues; // Tabella associativa in cui ogni 
             // chiave x è una variabile e il cui corrispondente valore è un'istruzione 
             // che alloca uno spazio di memoria della dimensione necessaria per 
             // memorizzare un variabile del tipo di x (nel nostro caso solo double)
@@ -123,16 +123,36 @@ public:
   Value *codegen(driver& drv) override;
 };
 
-/// IfExprAST- Classe per la rappresentazione delle espressioni condizionali
+/// IfExprAST
 class IfExprAST : public ExprAST {
 private:
-  ExprAST* cond;
+  ExprAST* Cond;
   ExprAST* TrueExp;
   ExprAST* FalseExp;
-
 public:
-  IfExprAST(ExprAST* cond, ExprAST* TrueExp, ExprAST* FalseExp);
+  IfExprAST(ExprAST* Cond, ExprAST* TrueExp, ExprAST* FalseExp);
   Value *codegen(driver& drv) override;
+};
+
+/// BlockExprAST
+class BlockExprAST : public ExprAST {
+private:
+  std::vector<VarBindingAST*> Def;
+  ExprAST* Val;
+public:
+  BlockExprAST(std::vector<VarBindingAST*> Def, ExprAST* Val);
+  Value *codegen(driver& drv) override;
+}; 
+
+/// VarBindingAST
+class VarBindingAST: public RootAST {
+private:
+  const std::string Name;
+  ExprAST* Val;
+public:
+  VarBindingAST(const std::string Name, ExprAST* Val);
+  AllocaInst *codegen(driver& drv) override;
+  const std::string& getName() const;
 };
 
 /// PrototypeAST - Classe per la rappresentazione dei prototipi di funzione

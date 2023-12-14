@@ -17,9 +17,10 @@
   class VariableExprAST;
   class CallExprAST;
   class FunctionAST;
-  class IfExprAST;
   class SeqAST;
   class PrototypeAST;
+  class BlockExprAST;
+  class VarBindingAST;
 }
 
 // The parsing context.
@@ -48,9 +49,13 @@
   QMARK	     "?"
   COLON      ":"
   LT         "<"
-  EQ         "="
+  EQ         "=="
+  ASSIGN     "="
+  LBRACE     "{"
+  RBRACE     "}"
   EXTERN     "extern"
   DEF        "def"
+  VAR        "var"
 ;
 
 %token <std::string> IDENTIFIER "id"
@@ -67,6 +72,11 @@
 %type <PrototypeAST*> external
 %type <PrototypeAST*> proto
 %type <std::vector<std::string>> idseq
+%type <BlockExprAST*> blockexp
+%type <std::vector<VarBindingAST*>> vardefs
+%type <VarBindingAST*> binding
+
+
 %%
 %start startsymb;
 
@@ -97,7 +107,7 @@ idseq:
 | "id" idseq            { $2.insert($2.begin(),$1); $$ = $2; };
 
 %left ":";
-%left "<" "=";
+%left "<" "==";
 %left "+" "-";
 %left "*" "/";
 
@@ -108,15 +118,29 @@ exp:
 | exp "/" exp           { $$ = new BinaryExprAST('/',$1,$3); }
 | idexp                 { $$ = $1; }
 | "(" exp ")"           { $$ = $2; }
-| "number"              { $$ = new NumberExprAST($1); };
+| "number"              { $$ = new NumberExprAST($1); }
 | expif                 { $$ = $1; }
+| blockexp              { $$ = $1; };
 
+blockexp:
+  "{" vardefs ";" exp "}" { $$ = new BlockExprAST($2,$4); }
+  
+vardefs:
+  binding                 { std::vector<VarBindingAST*> definitions;
+                            definitions.push_back($1);
+                            $$ = definitions; }
+| vardefs ";" binding     { $1.push_back($3);
+                            $$ = $1; }
+                            
+binding:
+  "var" "id" "=" exp      { $$ = new VarBindingAST($2,$4); }
+                      
 expif:
   condexp "?" exp ":" exp { $$ = new IfExprAST($1,$3,$5); }
 
 condexp:
   exp "<" exp           { $$ = new BinaryExprAST('<',$1,$3); }
-| exp "=" exp           { $$ = new BinaryExprAST('=',$1,$3); }
+| exp "==" exp          { $$ = new BinaryExprAST('=',$1,$3); }
 
 idexp:
   "id"                  { $$ = new VariableExprAST($1); }

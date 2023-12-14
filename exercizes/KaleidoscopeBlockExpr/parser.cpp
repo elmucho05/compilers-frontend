@@ -42,7 +42,7 @@
 
 
 // Unqualified %code blocks.
-#line 33 "parser.yy"
+#line 34 "parser.yy"
 
 # include "driver.hpp"
 
@@ -206,6 +206,10 @@ namespace yy {
   {
     switch (that.kind ())
     {
+      case symbol_kind::S_blockexp: // blockexp
+        value.YY_MOVE_OR_COPY< BlockExprAST* > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_expif: // expif
       case symbol_kind::S_condexp: // condexp
@@ -227,6 +231,10 @@ namespace yy {
         value.YY_MOVE_OR_COPY< RootAST* > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_binding: // binding
+        value.YY_MOVE_OR_COPY< VarBindingAST* > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
         value.YY_MOVE_OR_COPY< double > (YY_MOVE (that.value));
         break;
@@ -238,6 +246,10 @@ namespace yy {
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.YY_MOVE_OR_COPY< std::vector<ExprAST*> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_vardefs: // vardefs
+        value.YY_MOVE_OR_COPY< std::vector<VarBindingAST*> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_idseq: // idseq
@@ -259,6 +271,10 @@ namespace yy {
   {
     switch (that.kind ())
     {
+      case symbol_kind::S_blockexp: // blockexp
+        value.move< BlockExprAST* > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_expif: // expif
       case symbol_kind::S_condexp: // condexp
@@ -280,6 +296,10 @@ namespace yy {
         value.move< RootAST* > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_binding: // binding
+        value.move< VarBindingAST* > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
         value.move< double > (YY_MOVE (that.value));
         break;
@@ -291,6 +311,10 @@ namespace yy {
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.move< std::vector<ExprAST*> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_vardefs: // vardefs
+        value.move< std::vector<VarBindingAST*> > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_idseq: // idseq
@@ -312,6 +336,10 @@ namespace yy {
     state = that.state;
     switch (that.kind ())
     {
+      case symbol_kind::S_blockexp: // blockexp
+        value.copy< BlockExprAST* > (that.value);
+        break;
+
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_expif: // expif
       case symbol_kind::S_condexp: // condexp
@@ -333,6 +361,10 @@ namespace yy {
         value.copy< RootAST* > (that.value);
         break;
 
+      case symbol_kind::S_binding: // binding
+        value.copy< VarBindingAST* > (that.value);
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
         value.copy< double > (that.value);
         break;
@@ -344,6 +376,10 @@ namespace yy {
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.copy< std::vector<ExprAST*> > (that.value);
+        break;
+
+      case symbol_kind::S_vardefs: // vardefs
+        value.copy< std::vector<VarBindingAST*> > (that.value);
         break;
 
       case symbol_kind::S_idseq: // idseq
@@ -364,6 +400,10 @@ namespace yy {
     state = that.state;
     switch (that.kind ())
     {
+      case symbol_kind::S_blockexp: // blockexp
+        value.move< BlockExprAST* > (that.value);
+        break;
+
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_expif: // expif
       case symbol_kind::S_condexp: // condexp
@@ -385,6 +425,10 @@ namespace yy {
         value.move< RootAST* > (that.value);
         break;
 
+      case symbol_kind::S_binding: // binding
+        value.move< VarBindingAST* > (that.value);
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
         value.move< double > (that.value);
         break;
@@ -396,6 +440,10 @@ namespace yy {
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.move< std::vector<ExprAST*> > (that.value);
+        break;
+
+      case symbol_kind::S_vardefs: // vardefs
+        value.move< std::vector<VarBindingAST*> > (that.value);
         break;
 
       case symbol_kind::S_idseq: // idseq
@@ -661,6 +709,10 @@ namespace yy {
          when using variants.  */
       switch (yyr1_[yyn])
     {
+      case symbol_kind::S_blockexp: // blockexp
+        yylhs.value.emplace< BlockExprAST* > ();
+        break;
+
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_expif: // expif
       case symbol_kind::S_condexp: // condexp
@@ -682,6 +734,10 @@ namespace yy {
         yylhs.value.emplace< RootAST* > ();
         break;
 
+      case symbol_kind::S_binding: // binding
+        yylhs.value.emplace< VarBindingAST* > ();
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
         yylhs.value.emplace< double > ();
         break;
@@ -693,6 +749,10 @@ namespace yy {
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         yylhs.value.emplace< std::vector<ExprAST*> > ();
+        break;
+
+      case symbol_kind::S_vardefs: // vardefs
+        yylhs.value.emplace< std::vector<VarBindingAST*> > ();
         break;
 
       case symbol_kind::S_idseq: // idseq
@@ -720,180 +780,213 @@ namespace yy {
           switch (yyn)
             {
   case 2: // startsymb: program
-#line 74 "parser.yy"
+#line 84 "parser.yy"
                         { drv.root = yystack_[0].value.as < RootAST* > (); }
-#line 726 "parser.cpp"
+#line 786 "parser.cpp"
     break;
 
   case 3: // program: %empty
-#line 77 "parser.yy"
+#line 87 "parser.yy"
                         { yylhs.value.as < RootAST* > () = new SeqAST(nullptr,nullptr); }
-#line 732 "parser.cpp"
+#line 792 "parser.cpp"
     break;
 
   case 4: // program: top ";" program
-#line 78 "parser.yy"
+#line 88 "parser.yy"
                         { yylhs.value.as < RootAST* > () = new SeqAST(yystack_[2].value.as < RootAST* > (),yystack_[0].value.as < RootAST* > ()); }
-#line 738 "parser.cpp"
+#line 798 "parser.cpp"
     break;
 
   case 5: // top: %empty
-#line 81 "parser.yy"
+#line 91 "parser.yy"
                         { yylhs.value.as < RootAST* > () = nullptr; }
-#line 744 "parser.cpp"
+#line 804 "parser.cpp"
     break;
 
   case 6: // top: definition
-#line 82 "parser.yy"
+#line 92 "parser.yy"
                         { yylhs.value.as < RootAST* > () = yystack_[0].value.as < FunctionAST* > (); }
-#line 750 "parser.cpp"
+#line 810 "parser.cpp"
     break;
 
   case 7: // top: external
-#line 83 "parser.yy"
+#line 93 "parser.yy"
                         { yylhs.value.as < RootAST* > () = yystack_[0].value.as < PrototypeAST* > (); }
-#line 756 "parser.cpp"
+#line 816 "parser.cpp"
     break;
 
   case 8: // definition: "def" proto exp
-#line 86 "parser.yy"
+#line 96 "parser.yy"
                         { yylhs.value.as < FunctionAST* > () = new FunctionAST(yystack_[1].value.as < PrototypeAST* > (),yystack_[0].value.as < ExprAST* > ()); yystack_[1].value.as < PrototypeAST* > ()->noemit(); }
-#line 762 "parser.cpp"
+#line 822 "parser.cpp"
     break;
 
   case 9: // external: "extern" proto
-#line 89 "parser.yy"
+#line 99 "parser.yy"
                         { yylhs.value.as < PrototypeAST* > () = yystack_[0].value.as < PrototypeAST* > (); }
-#line 768 "parser.cpp"
+#line 828 "parser.cpp"
     break;
 
   case 10: // proto: "id" "(" idseq ")"
-#line 92 "parser.yy"
+#line 102 "parser.yy"
                         { yylhs.value.as < PrototypeAST* > () = new PrototypeAST(yystack_[3].value.as < std::string > (),yystack_[1].value.as < std::vector<std::string> > ());  }
-#line 774 "parser.cpp"
+#line 834 "parser.cpp"
     break;
 
   case 11: // idseq: %empty
-#line 95 "parser.yy"
+#line 105 "parser.yy"
                         { std::vector<std::string> args;
                          yylhs.value.as < std::vector<std::string> > () = args; }
-#line 781 "parser.cpp"
-    break;
-
-  case 12: // idseq: "id" idseq
-#line 97 "parser.yy"
-                        { yystack_[0].value.as < std::vector<std::string> > ().insert(yystack_[0].value.as < std::vector<std::string> > ().begin(),yystack_[1].value.as < std::string > ()); yylhs.value.as < std::vector<std::string> > () = yystack_[0].value.as < std::vector<std::string> > (); }
-#line 787 "parser.cpp"
-    break;
-
-  case 13: // exp: exp "+" exp
-#line 105 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('+',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
-#line 793 "parser.cpp"
-    break;
-
-  case 14: // exp: exp "-" exp
-#line 106 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('-',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
-#line 799 "parser.cpp"
-    break;
-
-  case 15: // exp: exp "*" exp
-#line 107 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('*',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
-#line 805 "parser.cpp"
-    break;
-
-  case 16: // exp: exp "/" exp
-#line 108 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('/',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
-#line 811 "parser.cpp"
-    break;
-
-  case 17: // exp: idexp
-#line 109 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = yystack_[0].value.as < ExprAST* > (); }
-#line 817 "parser.cpp"
-    break;
-
-  case 18: // exp: "(" exp ")"
-#line 110 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = yystack_[1].value.as < ExprAST* > (); }
-#line 823 "parser.cpp"
-    break;
-
-  case 19: // exp: "number"
-#line 111 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new NumberExprAST(yystack_[0].value.as < double > ()); }
-#line 829 "parser.cpp"
-    break;
-
-  case 20: // exp: expif
-#line 112 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = yystack_[0].value.as < ExprAST* > (); }
-#line 835 "parser.cpp"
-    break;
-
-  case 21: // expif: condexp "?" exp ":" exp
-#line 115 "parser.yy"
-                          { yylhs.value.as < ExprAST* > () = new IfExprAST(yystack_[4].value.as < ExprAST* > (),yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
 #line 841 "parser.cpp"
     break;
 
-  case 22: // condexp: exp "<" exp
-#line 118 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('<',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
+  case 12: // idseq: "id" idseq
+#line 107 "parser.yy"
+                        { yystack_[0].value.as < std::vector<std::string> > ().insert(yystack_[0].value.as < std::vector<std::string> > ().begin(),yystack_[1].value.as < std::string > ()); yylhs.value.as < std::vector<std::string> > () = yystack_[0].value.as < std::vector<std::string> > (); }
 #line 847 "parser.cpp"
     break;
 
-  case 23: // condexp: exp "=" exp
-#line 119 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('=',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
+  case 13: // exp: exp "+" exp
+#line 115 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('+',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
 #line 853 "parser.cpp"
     break;
 
-  case 24: // idexp: "id"
-#line 122 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new VariableExprAST(yystack_[0].value.as < std::string > ()); }
+  case 14: // exp: exp "-" exp
+#line 116 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('-',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
 #line 859 "parser.cpp"
     break;
 
-  case 25: // idexp: "id" "(" optexp ")"
-#line 123 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new CallExprAST(yystack_[3].value.as < std::string > (),yystack_[1].value.as < std::vector<ExprAST*> > ()); }
+  case 15: // exp: exp "*" exp
+#line 117 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('*',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
 #line 865 "parser.cpp"
     break;
 
-  case 26: // optexp: %empty
+  case 16: // exp: exp "/" exp
+#line 118 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('/',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
+#line 871 "parser.cpp"
+    break;
+
+  case 17: // exp: idexp
+#line 119 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = yystack_[0].value.as < ExprAST* > (); }
+#line 877 "parser.cpp"
+    break;
+
+  case 18: // exp: "(" exp ")"
+#line 120 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = yystack_[1].value.as < ExprAST* > (); }
+#line 883 "parser.cpp"
+    break;
+
+  case 19: // exp: "number"
+#line 121 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new NumberExprAST(yystack_[0].value.as < double > ()); }
+#line 889 "parser.cpp"
+    break;
+
+  case 20: // exp: expif
+#line 122 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = yystack_[0].value.as < ExprAST* > (); }
+#line 895 "parser.cpp"
+    break;
+
+  case 21: // exp: blockexp
+#line 123 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = yystack_[0].value.as < BlockExprAST* > (); }
+#line 901 "parser.cpp"
+    break;
+
+  case 22: // blockexp: "{" vardefs ";" exp "}"
 #line 126 "parser.yy"
+                          { yylhs.value.as < BlockExprAST* > () = new BlockExprAST(yystack_[3].value.as < std::vector<VarBindingAST*> > (),yystack_[1].value.as < ExprAST* > ()); }
+#line 907 "parser.cpp"
+    break;
+
+  case 23: // vardefs: binding
+#line 129 "parser.yy"
+                          { std::vector<VarBindingAST*> definitions;
+                            definitions.push_back(yystack_[0].value.as < VarBindingAST* > ());
+                            yylhs.value.as < std::vector<VarBindingAST*> > () = definitions; }
+#line 915 "parser.cpp"
+    break;
+
+  case 24: // vardefs: vardefs ";" binding
+#line 132 "parser.yy"
+                          { yystack_[2].value.as < std::vector<VarBindingAST*> > ().push_back(yystack_[0].value.as < VarBindingAST* > ());
+                            yylhs.value.as < std::vector<VarBindingAST*> > () = yystack_[2].value.as < std::vector<VarBindingAST*> > (); }
+#line 922 "parser.cpp"
+    break;
+
+  case 25: // binding: "var" "id" "=" exp
+#line 136 "parser.yy"
+                          { yylhs.value.as < VarBindingAST* > () = new VarBindingAST(yystack_[2].value.as < std::string > (),yystack_[0].value.as < ExprAST* > ()); }
+#line 928 "parser.cpp"
+    break;
+
+  case 26: // expif: condexp "?" exp ":" exp
+#line 139 "parser.yy"
+                          { yylhs.value.as < ExprAST* > () = new IfExprAST(yystack_[4].value.as < ExprAST* > (),yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
+#line 934 "parser.cpp"
+    break;
+
+  case 27: // condexp: exp "<" exp
+#line 142 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('<',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
+#line 940 "parser.cpp"
+    break;
+
+  case 28: // condexp: exp "==" exp
+#line 143 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('=',yystack_[2].value.as < ExprAST* > (),yystack_[0].value.as < ExprAST* > ()); }
+#line 946 "parser.cpp"
+    break;
+
+  case 29: // idexp: "id"
+#line 146 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new VariableExprAST(yystack_[0].value.as < std::string > ()); }
+#line 952 "parser.cpp"
+    break;
+
+  case 30: // idexp: "id" "(" optexp ")"
+#line 147 "parser.yy"
+                        { yylhs.value.as < ExprAST* > () = new CallExprAST(yystack_[3].value.as < std::string > (),yystack_[1].value.as < std::vector<ExprAST*> > ()); }
+#line 958 "parser.cpp"
+    break;
+
+  case 31: // optexp: %empty
+#line 150 "parser.yy"
                         { std::vector<ExprAST*> args;
 			 yylhs.value.as < std::vector<ExprAST*> > () = args; }
-#line 872 "parser.cpp"
+#line 965 "parser.cpp"
     break;
 
-  case 27: // optexp: explist
-#line 128 "parser.yy"
+  case 32: // optexp: explist
+#line 152 "parser.yy"
                         { yylhs.value.as < std::vector<ExprAST*> > () = yystack_[0].value.as < std::vector<ExprAST*> > (); }
-#line 878 "parser.cpp"
+#line 971 "parser.cpp"
     break;
 
-  case 28: // explist: exp
-#line 131 "parser.yy"
+  case 33: // explist: exp
+#line 155 "parser.yy"
                         { std::vector<ExprAST*> args;
                          args.push_back(yystack_[0].value.as < ExprAST* > ());
 			 yylhs.value.as < std::vector<ExprAST*> > () = args;
                         }
-#line 887 "parser.cpp"
+#line 980 "parser.cpp"
     break;
 
-  case 29: // explist: exp "," explist
-#line 135 "parser.yy"
+  case 34: // explist: exp "," explist
+#line 159 "parser.yy"
                         { yystack_[0].value.as < std::vector<ExprAST*> > ().insert(yystack_[0].value.as < std::vector<ExprAST*> > ().begin(), yystack_[2].value.as < ExprAST* > ()); yylhs.value.as < std::vector<ExprAST*> > () = yystack_[0].value.as < std::vector<ExprAST*> > (); }
-#line 893 "parser.cpp"
+#line 986 "parser.cpp"
     break;
 
 
-#line 897 "parser.cpp"
+#line 990 "parser.cpp"
 
             default:
               break;
@@ -1245,87 +1338,97 @@ namespace yy {
   }
 
 
-  const signed char parser::yypact_ninf_ = -15;
+  const signed char parser::yypact_ninf_ = -19;
 
   const signed char parser::yytable_ninf_ = -6;
 
   const signed char
   parser::yypact_[] =
   {
-      -2,   -14,   -14,     5,   -15,     6,   -15,   -15,     3,   -15,
-      -7,   -15,    -2,    -9,    -7,    20,   -15,    49,   -15,     4,
-     -15,   -15,    -9,    18,    29,    -7,    -7,    -7,    -7,    -7,
-      -7,    -7,    -7,   -15,   -15,   -15,    19,    21,   -15,    -1,
-      -1,   -15,   -15,    49,    49,    39,    -7,   -15,    -7,   -15,
-      49
+      -2,   -18,   -18,     5,   -19,     7,   -19,   -19,     2,   -19,
+      19,   -19,    -2,   -13,    19,    -8,     9,   -19,    83,   -19,
+     -19,     8,   -19,   -19,   -13,    10,    63,    12,    26,   -19,
+      19,    19,    19,    19,    19,    19,    19,    19,   -19,   -19,
+     -19,    15,    -7,    53,    21,   -19,    -1,    -1,   -19,   -19,
+      83,    83,    73,    19,    39,   -19,    19,   -19,    19,    83,
+     -19,   -19,    83
   };
 
   const signed char
   parser::yydefact_[] =
   {
        3,     0,     0,     0,     2,     0,     6,     7,     0,     9,
-       0,     1,     3,    11,     0,    24,    19,     8,    20,     0,
-      17,     4,    11,     0,     0,    26,     0,     0,     0,     0,
-       0,     0,     0,    12,    10,    18,    28,     0,    27,    14,
-      13,    15,    16,    22,    23,     0,     0,    25,     0,    29,
-      21
+       0,     1,     3,    11,     0,     0,    29,    19,     8,    21,
+      20,     0,    17,     4,    11,     0,     0,     0,     0,    23,
+      31,     0,     0,     0,     0,     0,     0,     0,    12,    10,
+      18,     0,     0,    33,     0,    32,    14,    13,    15,    16,
+      27,    28,     0,     0,     0,    24,     0,    30,     0,    25,
+      22,    34,    26
   };
 
   const signed char
   parser::yypgoto_[] =
   {
-     -15,   -15,    28,   -15,   -15,   -15,    46,     8,   -10,   -15,
-     -15,   -15,   -15,    -5
+     -19,   -19,    22,   -19,   -19,   -19,    34,    13,   -10,   -19,
+     -19,    -4,   -19,   -19,   -19,   -19,   -17
   };
 
   const signed char
   parser::yydefgoto_[] =
   {
-       0,     3,     4,     5,     6,     7,     9,    23,    36,    18,
-      19,    20,    37,    38
+       0,     3,     4,     5,     6,     7,     9,    25,    43,    19,
+      28,    29,    20,    21,    22,    44,    45
   };
 
   const signed char
   parser::yytable_[] =
   {
-      17,    -5,    14,     8,    24,    11,    28,    29,    22,    12,
-      15,    16,    13,     1,     2,    32,    39,    40,    41,    42,
-      43,    44,    45,    46,    26,    27,    28,    29,    34,    25,
-      33,    47,    30,    31,    26,    27,    28,    29,    50,    35,
-      21,    49,    30,    31,    26,    27,    28,    29,    10,     0,
-       0,    48,    30,    31,    26,    27,    28,    29,     0,     0,
-       0,     0,    30,    31
+      18,    -5,    14,     8,    26,    11,    33,    34,    24,    15,
+      12,    13,    27,    27,    16,    17,     1,     2,    30,    37,
+      39,    46,    47,    48,    49,    50,    51,    52,    14,    42,
+      53,    57,    54,    41,    23,    15,    10,    38,    55,    61,
+      16,    17,     0,    59,    31,    32,    33,    34,    62,     0,
+       0,     0,    35,    36,     0,     0,    60,    56,    31,    32,
+      33,    34,     0,     0,     0,     0,    35,    36,    31,    32,
+      33,    34,     0,    40,     0,     0,    35,    36,    31,    32,
+      33,    34,     0,     0,     0,    58,    35,    36,    31,    32,
+      33,    34,     0,     0,     0,     0,    35,    36
   };
 
   const signed char
   parser::yycheck_[] =
   {
-      10,     3,     9,    17,    14,     0,     7,     8,    17,     3,
-      17,    18,     9,    15,    16,    11,    26,    27,    28,    29,
-      30,    31,    32,     4,     5,     6,     7,     8,    10,     9,
-      22,    10,    13,    14,     5,     6,     7,     8,    48,    10,
-      12,    46,    13,    14,     5,     6,     7,     8,     2,    -1,
-      -1,    12,    13,    14,     5,     6,     7,     8,    -1,    -1,
-      -1,    -1,    13,    14
+      10,     3,     9,    21,    14,     0,     7,     8,    21,    16,
+       3,     9,    20,    20,    21,    22,    18,    19,     9,    11,
+      10,    31,    32,    33,    34,    35,    36,    37,     9,     3,
+      15,    10,    42,    21,    12,    16,     2,    24,    42,    56,
+      21,    22,    -1,    53,     5,     6,     7,     8,    58,    -1,
+      -1,    -1,    13,    14,    -1,    -1,    17,     4,     5,     6,
+       7,     8,    -1,    -1,    -1,    -1,    13,    14,     5,     6,
+       7,     8,    -1,    10,    -1,    -1,    13,    14,     5,     6,
+       7,     8,    -1,    -1,    -1,    12,    13,    14,     5,     6,
+       7,     8,    -1,    -1,    -1,    -1,    13,    14
   };
 
   const signed char
   parser::yystos_[] =
   {
-       0,    15,    16,    20,    21,    22,    23,    24,    17,    25,
-      25,     0,     3,     9,     9,    17,    18,    27,    28,    29,
-      30,    21,    17,    26,    27,     9,     5,     6,     7,     8,
-      13,    14,    11,    26,    10,    10,    27,    31,    32,    27,
-      27,    27,    27,    27,    27,    27,     4,    10,    12,    32,
-      27
+       0,    18,    19,    24,    25,    26,    27,    28,    21,    29,
+      29,     0,     3,     9,     9,    16,    21,    22,    31,    32,
+      35,    36,    37,    25,    21,    30,    31,    20,    33,    34,
+       9,     5,     6,     7,     8,    13,    14,    11,    30,    10,
+      10,    21,     3,    31,    38,    39,    31,    31,    31,    31,
+      31,    31,    31,    15,    31,    34,     4,    10,    12,    31,
+      17,    39,    31
   };
 
   const signed char
   parser::yyr1_[] =
   {
-       0,    19,    20,    21,    21,    22,    22,    22,    23,    24,
-      25,    26,    26,    27,    27,    27,    27,    27,    27,    27,
-      27,    28,    29,    29,    30,    30,    31,    31,    32,    32
+       0,    23,    24,    25,    25,    26,    26,    26,    27,    28,
+      29,    30,    30,    31,    31,    31,    31,    31,    31,    31,
+      31,    31,    32,    33,    33,    34,    35,    36,    36,    37,
+      37,    38,    38,    39,    39
   };
 
   const signed char
@@ -1333,7 +1436,8 @@ namespace yy {
   {
        0,     2,     1,     0,     3,     0,     1,     1,     3,     2,
        4,     0,     2,     3,     3,     3,     3,     1,     3,     1,
-       1,     5,     3,     3,     1,     4,     0,     1,     1,     3
+       1,     1,     5,     1,     3,     4,     5,     3,     3,     1,
+       4,     0,     1,     1,     3
   };
 
 
@@ -1345,10 +1449,10 @@ namespace yy {
   {
   "\"end of file\"", "error", "\"invalid token\"", "\";\"", "\",\"",
   "\"-\"", "\"+\"", "\"*\"", "\"/\"", "\"(\"", "\")\"", "\"?\"", "\":\"",
-  "\"<\"", "\"=\"", "\"extern\"", "\"def\"", "\"id\"", "\"number\"",
-  "$accept", "startsymb", "program", "top", "definition", "external",
-  "proto", "idseq", "exp", "expif", "condexp", "idexp", "optexp",
-  "explist", YY_NULLPTR
+  "\"<\"", "\"==\"", "\"=\"", "\"{\"", "\"}\"", "\"extern\"", "\"def\"",
+  "\"var\"", "\"id\"", "\"number\"", "$accept", "startsymb", "program",
+  "top", "definition", "external", "proto", "idseq", "exp", "blockexp",
+  "vardefs", "binding", "expif", "condexp", "idexp", "optexp", "explist", YY_NULLPTR
   };
 #endif
 
@@ -1357,9 +1461,10 @@ namespace yy {
   const unsigned char
   parser::yyrline_[] =
   {
-       0,    74,    74,    77,    78,    81,    82,    83,    86,    89,
-      92,    95,    97,   105,   106,   107,   108,   109,   110,   111,
-     112,   115,   118,   119,   122,   123,   126,   128,   131,   135
+       0,    84,    84,    87,    88,    91,    92,    93,    96,    99,
+     102,   105,   107,   115,   116,   117,   118,   119,   120,   121,
+     122,   123,   126,   129,   132,   136,   139,   142,   143,   146,
+     147,   150,   152,   155,   159
   };
 
   void
@@ -1391,9 +1496,9 @@ namespace yy {
 
 
 } // yy
-#line 1395 "parser.cpp"
+#line 1500 "parser.cpp"
 
-#line 137 "parser.yy"
+#line 161 "parser.yy"
 
 
 void
