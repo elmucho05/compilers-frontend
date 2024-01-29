@@ -1,0 +1,95 @@
+% start startsymb ;
+
+startsymb :
+program
+
+program :
+    % empty
+| top ";" program
+
+
+top:
+ %empty
+
+| definition
+| external
+| globalvar
+
+definition:
+  "def" proto block
+
+external:
+  "extern" proto
+
+proto:
+  "id" "(" idseq ")"
+
+globalvar:
+"global" "id"
+
+
+idseq:
+ %empty
+| "id" idseq
+
+%left ":";
+%left "<" "=="
+%left "+" "-"
+%left "*" "/"
+
+stmts:
+  stmt
+| stmt ";" stmts
+
+stmt:
+  assignment
+| block
+| exp
+
+assignment:
+"id" "=" exp
+
+
+block:
+  "{" stmts "}"
+| "{" vardef ";" stmts "}"
+
+vardefs:
+  binding
+| vardefs ";" binding
+
+binding:
+  "var" "id" initexp
+
+initexp:
+ %empty
+| "=" exp
+
+exp:
+  exp "+" exp
+|  exp "-" exp
+| exp "*" exp
+| exp "/" exp
+| idexp
+| "(" exp ")"
+| "number"
+| expif
+
+expif:
+  condexp "?" exp ":" exp
+
+condexp: 
+  exp "<" exp
+| exp "==" exp
+
+idexp: 
+  "id"
+| "id" "(" optexp ")"
+
+optexp:
+  %empty
+| explist:
+
+explist:
+  exp
+| exp "," explist
