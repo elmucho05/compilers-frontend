@@ -27,6 +27,7 @@
   class IfStmtAST;
   class ForStmtAST;
   class InitFor;
+  class LogicalExprAST
 }
 
 // The parsing context.
@@ -69,6 +70,9 @@
   IF         "if"
   ELSE       "else"
   FOR        "for"
+  AND        "and"
+  OR         "or"
+  NOT        "not"
 ;
 
 %token <std::string> IDENTIFIER "id"
@@ -187,6 +191,14 @@ expif:
   condexp "?" exp ":" exp { $$ = new IfExprAST($1,$3,$5); };
 
 condexp:
+  relexp                { $$ = $1}
+| relexp "and" relexp   { $$ = new LogicalExprAST('and',$1,$3); }
+| relexp "or" relexp    { $$ = new LogicalExprAST('or', $1,$3); }
+| "not" condexp         { $$ = new LogicalExprAST('not, $2); } 
+| "(" condexp ")"       { $$ = $2; };
+
+
+relexp:
   exp "<" exp           { $$ = new BinaryExprAST('<',$1,$3); }
 | exp ">" exp           { $$ = new BinaryExprAST('>',$1,$3); }
 | exp "==" exp          { $$ = new BinaryExprAST('=',$1,$3); };
