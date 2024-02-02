@@ -733,3 +733,68 @@ Value *ForStmtAST::codegen(driver &drv){
 
   return Constant::getNullValue(Type::getDoubleTy(*context));
 }
+
+
+/******************LogicalExprAST****************************/
+  //Costruttore per AND e OR
+LogicalExprAST::LogicalExprAST(const std::string &Op, ExprAST* LHS, ExprAST* RHS)
+    : Op(Op), LHS(LHS), RHS(RHS) {}
+  
+  //Costrutture NOT
+LogicalExprAST::LogicalExprAST(const std::string &Op, ExprAST* RHS)
+    : Op(Op), LHS(nullptr), RHS(RHS) {}
+  
+Value* LogicalExprAST::codegen(driver &drv) {
+    Function *fun = builder->GetInsertBlock()->getParent();
+    Value* CondV;
+    if (Op == "not") {
+        CondV = RHS->codegen(drv);
+        if (!CondV) 
+            return LogErrorV("Failed to generate 'not' condition");
+        // In LLVM, 'not' is typically implemented using XOR
+        CondV = builder->CreateXor(CondV, ConstantInt::getTrue(*context), "nottmp");
+        return CondV;
+    }
+
+    BasicBlock *MergeBB = BasicBlock::Create(*context, "merge", fun);
+    BasicBlock *TrueBB = BasicBlock::Create(*context, "true", fun);
+    BasicBlock *FalseBB = BasicBlock::Create(*context, "false", fun);
+
+    Value* FirstVal = LHS->codegen(drv);
+    if (!FirstVal) 
+      return LogErrorV("Failed to generate lhs of logical expression");
+
+    if (Op == "and") {
+        builder->CreateCondBr(FirstVal, TrueBB, MergeBB);
+    } else if (Op == "or") {
+        builder->CreateCondBr(FirstVal, MergeBB, TrueBB);
+    }
+
+    builder->SetInsertPoint(TrueBB);
+    Value* SecondVal = RHS->codegen(drv);
+    if (!SecondVal) 
+      return LogErrorV("Failed to generate rhs of logical expression");
+    builder->CreateBr(MergeBB);
+
+    
+    builder->SetInsertPoint(MergeBB);
+    PHINode *PN = builder->CreatePHI(Type::getInt1Ty(*context), 2, "logictmp");
+
+    // Determine the incoming values based on the operation
+    if (Op == "and" || Op == "or") {
+        builder->SetInsertPoint(FalseBB);
+        builder->CreateBr(MergeBB);
+
+        PN->addIncoming(SecondVal, TrueBB); // Value if condition is true
+        // For 'and', the false path directly goes to merge with a false value
+        // For 'or', the false path directly goes to merge with a true value
+        Value *FalseVal = Op == "and" ? ConstantInt::getFalse(*context) : ConstantInt::getTrue(*context);
+        PN->addIncoming(FalseVal, FalseBB);
+    }
+
+    // Set the insertion point back to the merge block for any subsequent instructions
+    builder->SetInsertPoint(MergeBB);
+
+    return PN;
+}
+
