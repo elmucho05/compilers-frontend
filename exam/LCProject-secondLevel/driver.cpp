@@ -750,8 +750,8 @@ Value* LogicalExprAST::codegen(driver &drv) {
     if (Op == "not") {
         CondV = RHS->codegen(drv);
         if (!CondV) 
-            return LogErrorV("Failed to generate 'not' condition");
-        // In LLVM, 'not' is typically implemented using XOR
+            return LogErrorV("Non sono riuscito a generare un : not ");
+        //per invertire i bit faccio lo XOR che se è True mi da false e viceversa
         CondV = builder->CreateXor(CondV, ConstantInt::getTrue(*context), "nottmp");
         return CondV;
     }
@@ -762,7 +762,7 @@ Value* LogicalExprAST::codegen(driver &drv) {
 
     Value* FirstVal = LHS->codegen(drv);
     if (!FirstVal) 
-      return LogErrorV("Failed to generate lhs of logical expression");
+      return LogErrorV("non sono riuscito a generare la parte sx");
 
     if (Op == "and") {
         builder->CreateCondBr(FirstVal, TrueBB, MergeBB);
@@ -785,14 +785,16 @@ Value* LogicalExprAST::codegen(driver &drv) {
         builder->SetInsertPoint(FalseBB);
         builder->CreateBr(MergeBB);
 
-        PN->addIncoming(SecondVal, TrueBB); // Value if condition is true
-        // For 'and', the false path directly goes to merge with a false value
-        // For 'or', the false path directly goes to merge with a true value
+        PN->addIncoming(SecondVal, TrueBB); 
+        //Qua si applica un "cortocircuito"
+        //Se la prima condizione del "and" è falsa, allora il risultato è falso
+        //Se la prima condizione del "or" è vero allora il risultato è vero
+
+        //quindi il path viene mergato con un valore vero o falso in base a se è "and" o un "or"
         Value *FalseVal = Op == "and" ? ConstantInt::getFalse(*context) : ConstantInt::getTrue(*context);
         PN->addIncoming(FalseVal, FalseBB);
     }
-
-    // Set the insertion point back to the merge block for any subsequent instructions
+  //reimposta l'insertion point a MergeBB per le future istruzioni
     builder->SetInsertPoint(MergeBB);
 
     return PN;
