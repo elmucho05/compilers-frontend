@@ -1038,4 +1038,23 @@ Value *ArrayDeclarationAST::codegen(driver &drv) {
 //ArrayExr è sottoclasse di ArrayAST 
 
 //%nonassoc;
-//| "-" exp %perc INVERT
+//
+
+a=1
+b=2
+
+if(a<b)
+  ciap
+else
+ ajsdhjas
+
+kdldhasd
+
+          if
+      True    False   
+      
+          Merge
+
+
+
+| "-" exp %perc INVERT
