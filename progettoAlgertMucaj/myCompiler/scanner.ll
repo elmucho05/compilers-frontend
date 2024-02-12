@@ -33,24 +33,23 @@ blank   [ \t]
 {blank}+   loc.step ();
 [\n]+      loc.lines (yyleng); loc.step ();
 
-"--"      return yy::parser::make_DEC       (loc);
-"++"      return yy::parser::make_INC       (loc);
-"-"      return yy::parser::make_MINUS     (loc);
-"+"      return yy::parser::make_PLUS      (loc);
-"*"      return yy::parser::make_STAR      (loc);
-"/"      return yy::parser::make_SLASH     (loc);
-"("      return yy::parser::make_LPAREN    (loc);
-")"      return yy::parser::make_RPAREN    (loc);
-";"      return yy::parser::make_SEMICOLON (loc);
-","      return yy::parser::make_COMMA     (loc);
-"?"      return yy::parser::make_QMARK     (loc);
-":"      return yy::parser::make_COLON     (loc);
-"<"      return yy::parser::make_LT        (loc);
-">"      return yy::parser::make_GT        (loc);
-"=="     return yy::parser::make_EQ        (loc);
-"="      return yy::parser::make_ASSIGN    (loc);
-"{"      return yy::parser::make_LBRACE    (loc);
-"}"      return yy::parser::make_RBRACE    (loc);
+"-"     return yy::parser::make_MINUS       (loc);
+"+"     return yy::parser::make_PLUS        (loc);
+"*"     return yy::parser::make_STAR        (loc);
+"/"     return yy::parser::make_SLASH       (loc);
+"("     return yy::parser::make_LPAREN      (loc);
+")"     return yy::parser::make_RPAREN      (loc);
+";"     return yy::parser::make_SEMICOLON   (loc);
+","     return yy::parser::make_COMMA       (loc);
+"?"     return yy::parser::make_QMARK       (loc);
+":"     return yy::parser::make_COLON       (loc);
+"<"     return yy::parser::make_LT          (loc);
+"=="    return yy::parser::make_EQ          (loc);
+"="     return yy::parser::make_ASSIGN      (loc);
+"{"     return yy::parser::make_LBRACE      (loc);
+"}"     return yy::parser::make_RBRACE      (loc);
+"["     return yy::parser::make_LSQBRACE    (loc);
+"]"     return yy::parser::make_RSQBRACE    (loc);
 
 {num}    { errno = 0;
            double n = strtod(yytext, NULL);
@@ -59,17 +58,18 @@ blank   [ \t]
                       + std::string(yytext));
            return yy::parser::make_NUMBER(n, loc);
          }
-         
+
+"not"    { return yy::parser::make_NOT(loc); }
+"or"     { return yy::parser::make_OR(loc); }
+"and"    { return yy::parser::make_AND(loc); }         
 "def"    { return yy::parser::make_DEF(loc); }
 "extern" { return yy::parser::make_EXTERN(loc); }
 "var"    { return yy::parser::make_VAR(loc); }
 "global" { return yy::parser::make_GLOBAL(loc); }
 "if"     { return yy::parser::make_IF(loc); }
-"else"   { return yy::parser::make_ELSE(loc); }
+"else"    { return yy::parser::make_ELSE(loc); }
 "for"    { return yy::parser::make_FOR(loc); }
-"and"    { return yy::parser::make_AND(loc); }
-"or"     { return yy::parser::make_OR(loc); }
-"not"    { return yy::parser::make_NOT(loc); }
+
 {id}     { return yy::parser::make_IDENTIFIER (yytext, loc); }
 
 .        { throw yy::parser::syntax_error

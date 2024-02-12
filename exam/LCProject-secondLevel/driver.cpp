@@ -162,6 +162,25 @@ Value *BinaryExprAST::codegen(driver &drv)
   }
 };
 
+/********UnaryExprAST***********/
+UnaryExprAST::UnaryExprAST(char Op, ExprAST *Operand):
+  Op(Op), Operand(Operand) {};
+
+Value* UnaryExprAST::codegen(driver &drv){
+  Value* OperandV = Operand->codegen(drv);
+    if (!OperandV)
+      return nullptr;
+  if (Op == '-') {
+        if (OperandV->getType()->isFloatingPointTy()) {
+            return builder->CreateFNeg(OperandV, "negtmp");
+        } else {
+            return LogErrorV("Unary '-' operator requires a floating-point operand.");
+        }
+    }
+  return nullptr;
+}
+
+
 /********************* Call Expression Tree ***********************/
 /* Call Expression Tree */
 CallExprAST::CallExprAST(std::string Callee, std::vector<ExprAST *> Args) : Callee(Callee), Args(std::move(Args)){};
@@ -733,3 +752,60 @@ Value *ForStmtAST::codegen(driver &drv){
 
   return Constant::getNullValue(Type::getDoubleTy(*context));
 }
+
+
+/******************LogicalExprAST****************************/
+  //Costruttore per AND e OR
+LogicalExprAST::LogicalExprAST(const std::string &Op, ExprAST* LHS, ExprAST* RHS)
+    : Op(Op), LHS(LHS), RHS(RHS) {}
+  
+  //Costrutture NOT
+LogicalExprAST::LogicalExprAST(const std::string &Op, ExprAST* RHS)
+    : Op(Op), LHS(nullptr), RHS(RHS) {}
+  
+Value* LogicalExprAST::codegen(driver &drv) {
+   if (Op == "not") {
+        Value* CondV = RHS->codegen(drv);
+        if (!CondV) return nullptr;
+        // LLVM IR for logical NOT using XOR
+        return builder->CreateXor(CondV, ConstantInt::get(Type::getInt1Ty(*context), 1), "nottmp");
+    }
+
+    Function *fun = builder->GetInsertBlock()->getParent();
+    BasicBlock *ThenBB = BasicBlock::Create(*context, "then", fun);
+    BasicBlock *ElseBB = BasicBlock::Create(*context, "else", fun);
+    BasicBlock *MergeBB = BasicBlock::Create(*context, "merge", fun);
+
+    Value* CondV = LHS->codegen(drv);
+    if (!CondV) return nullptr;
+
+    builder->CreateCondBr(CondV, (Op == "and") ? ThenBB : ElseBB, (Op == "and") ? ElseBB : ThenBB);
+
+    // Implement short-circuit for "and" and "or"
+    if (Op == "and") {
+        builder->CreateCondBr(CondV, ThenBB, ElseBB); // If LHS is false, go to MergeBB
+    } else if (Op == "or") {
+        builder->CreateCondBr(CondV, ElseBB, ThenBB); // If LHS is true, go to MergeBB
+    }
+
+    // Emit then value.
+    builder->SetInsertPoint(ThenBB);
+
+    Value *ThenV = RHS->codegen(drv);
+    if (!ThenV) return nullptr;
+
+    builder->CreateBr(MergeBB);
+    builder->SetInsertPoint(ElseBB);
+    Value *ElseV = (Op == "and") ? ConstantInt::getFalse(*context) : ConstantInt::getTrue(*context);
+    builder->CreateBr(MergeBB);
+
+    // Finalizing the Merge block setup
+    builder->SetInsertPoint(MergeBB);
+    PHINode *PN = builder->CreatePHI(Type::getInt1Ty(*context), 2, "iftmp");
+
+    PN->addIncoming(ThenV, ThenBB);
+    PN->addIncoming(ElseV, ElseBB);
+
+return PN;
+};
+

@@ -6,5 +6,5 @@ def fibo(n) {
        b = a+b;
        a = oldb
    };
-   b
+   b 
 };

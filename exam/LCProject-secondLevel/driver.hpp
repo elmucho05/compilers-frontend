@@ -118,6 +118,16 @@ public:
   Value *codegen(driver& drv) override;
 };
 
+class UnaryExprAST : public ExprAST {
+private:
+  char Op;
+  ExprAST* Operand;
+
+public:
+  UnaryExprAST(char Op, ExprAST* Operand);
+  Value* codegen(driver &drv) override;
+};
+
 /// CallExprAST - Classe per la rappresentazione di chiamate di funzione
 class CallExprAST : public ExprAST {
 private:
@@ -212,6 +222,21 @@ public:
   const std::string& getName() const;
 };
 
+class LogicalExprAST : public ExprAST {
+  private:
+    std::string Op; // può assumere i valori "and", "or", "not"
+    ExprAST* LHS; // parte sx, può essere nullptr se è not 
+    ExprAST* RHS; 
+
+  public: 
+    //Costruttore per "and" e "or"
+    LogicalExprAST(const std::string &Op, ExprAST* LHS, ExprAST* RHS);
+    //costruttore per "not"
+    LogicalExprAST(const std::string &Op, ExprAST* RHS);
+    Value *codegen(driver& drv) override;
+};
+
+
 //IfStmtAST classe per gli If/Else
 class IfStmtAST : public StmtAST {
 private:
@@ -243,4 +268,5 @@ class InitFor : RootAST {
     InitFor(initType InitExp);
     initType getOp();
 };
+
 #endif // ! DRIVER_HH
