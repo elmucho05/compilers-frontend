@@ -180,7 +180,7 @@ exp:
 | exp "/" exp           { $$ = new BinaryExprAST('/',$1,$3); }
 | idexp                 { $$ = $1; }
 | "(" exp ")"           { $$ = $2; }
-| "-" exp               { $$ = new BinaryExprAST('*',$2, new NumberExprAST(-1.0)); }
+| "-" exp               { $$ = new UnaryExprAST('-', $2); }
 | "number"              { $$ = new NumberExprAST($1); }
 | expif                 { $$ = $1; };
 

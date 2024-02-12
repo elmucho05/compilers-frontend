@@ -1141,7 +1141,7 @@ namespace yy {
 
   case 36: // exp: "-" exp
 #line 183 "parser.yy"
-                        { yylhs.value.as < ExprAST* > () = new BinaryExprAST('*',yystack_[0].value.as < ExprAST* > (), new NumberExprAST(-1.0)); }
+                        { yylhs.value.as < ExprAST* > () = new UnaryExprAST('-', yystack_[0].value.as < ExprAST* > ()); }
 #line 1146 "parser.cpp"
     break;
 

@@ -162,6 +162,25 @@ Value *BinaryExprAST::codegen(driver &drv)
   }
 };
 
+/********UnaryExprAST***********/
+UnaryExprAST::UnaryExprAST(char Op, ExprAST *Operand):
+  Op(Op), Operand(Operand) {};
+
+Value* UnaryExprAST::codegen(driver &drv){
+  Value* OperandV = Operand->codegen(drv);
+    if (!OperandV)
+      return nullptr;
+  if (Op == '-') {
+        if (OperandV->getType()->isFloatingPointTy()) {
+            return builder->CreateFNeg(OperandV, "negtmp");
+        } else {
+            return LogErrorV("Unary '-' operator requires a floating-point operand.");
+        }
+    }
+  return nullptr;
+}
+
+
 /********************* Call Expression Tree ***********************/
 /* Call Expression Tree */
 CallExprAST::CallExprAST(std::string Callee, std::vector<ExprAST *> Args) : Callee(Callee), Args(std::move(Args)){};
@@ -745,58 +764,48 @@ LogicalExprAST::LogicalExprAST(const std::string &Op, ExprAST* RHS)
     : Op(Op), LHS(nullptr), RHS(RHS) {}
   
 Value* LogicalExprAST::codegen(driver &drv) {
+   if (Op == "not") {
+        Value* CondV = RHS->codegen(drv);
+        if (!CondV) return nullptr;
+        // LLVM IR for logical NOT using XOR
+        return builder->CreateXor(CondV, ConstantInt::get(Type::getInt1Ty(*context), 1), "nottmp");
+    }
+
     Function *fun = builder->GetInsertBlock()->getParent();
-    Value* CondV;
-    if (Op == "not") {
-        CondV = RHS->codegen(drv);
-        if (!CondV) 
-            return LogErrorV("Non sono riuscito a generare un : not ");
-        //per invertire i bit faccio lo XOR che se è True mi da false e viceversa
-        CondV = builder->CreateXor(CondV, ConstantInt::getTrue(*context), "nottmp");
-        return CondV;
-    }
-
+    BasicBlock *ThenBB = BasicBlock::Create(*context, "then", fun);
+    BasicBlock *ElseBB = BasicBlock::Create(*context, "else", fun);
     BasicBlock *MergeBB = BasicBlock::Create(*context, "merge", fun);
-    BasicBlock *TrueBB = BasicBlock::Create(*context, "true", fun);
-    BasicBlock *FalseBB = BasicBlock::Create(*context, "false", fun);
 
-    Value* FirstVal = LHS->codegen(drv);
-    if (!FirstVal) 
-      return LogErrorV("non sono riuscito a generare la parte sx");
+    Value* CondV = LHS->codegen(drv);
+    if (!CondV) return nullptr;
 
+    builder->CreateCondBr(CondV, (Op == "and") ? ThenBB : ElseBB, (Op == "and") ? ElseBB : ThenBB);
+
+    // Implement short-circuit for "and" and "or"
     if (Op == "and") {
-        builder->CreateCondBr(FirstVal, TrueBB, MergeBB);
+        builder->CreateCondBr(CondV, ThenBB, ElseBB); // If LHS is false, go to MergeBB
     } else if (Op == "or") {
-        builder->CreateCondBr(FirstVal, MergeBB, TrueBB);
+        builder->CreateCondBr(CondV, ElseBB, ThenBB); // If LHS is true, go to MergeBB
     }
 
-    builder->SetInsertPoint(TrueBB);
-    Value* SecondVal = RHS->codegen(drv);
-    if (!SecondVal) 
-      return LogErrorV("Failed to generate rhs of logical expression");
+    // Emit then value.
+    builder->SetInsertPoint(ThenBB);
+
+    Value *ThenV = RHS->codegen(drv);
+    if (!ThenV) return nullptr;
+
+    builder->CreateBr(MergeBB);
+    builder->SetInsertPoint(ElseBB);
+    Value *ElseV = (Op == "and") ? ConstantInt::getFalse(*context) : ConstantInt::getTrue(*context);
     builder->CreateBr(MergeBB);
 
-    
+    // Finalizing the Merge block setup
     builder->SetInsertPoint(MergeBB);
-    PHINode *PN = builder->CreatePHI(Type::getInt1Ty(*context), 2, "logictmp");
+    PHINode *PN = builder->CreatePHI(Type::getInt1Ty(*context), 2, "iftmp");
 
-    // Determine the incoming values based on the operation
-    if (Op == "and" || Op == "or") {
-        builder->SetInsertPoint(FalseBB);
-        builder->CreateBr(MergeBB);
+    PN->addIncoming(ThenV, ThenBB);
+    PN->addIncoming(ElseV, ElseBB);
 
-        PN->addIncoming(SecondVal, TrueBB); 
-        //Qua si applica un "cortocircuito"
-        //Se la prima condizione del "and" è falsa, allora il risultato è falso
-        //Se la prima condizione del "or" è vero allora il risultato è vero
-
-        //quindi il path viene mergato con un valore vero o falso in base a se è "and" o un "or"
-        Value *FalseVal = Op == "and" ? ConstantInt::getFalse(*context) : ConstantInt::getTrue(*context);
-        PN->addIncoming(FalseVal, FalseBB);
-    }
-  //reimposta l'insertion point a MergeBB per le future istruzioni
-    builder->SetInsertPoint(MergeBB);
-
-    return PN;
-}
+return PN;
+};
 
